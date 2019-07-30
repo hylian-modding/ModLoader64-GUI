@@ -1,0 +1,75 @@
+{
+	"name": "modloader64-gui",
+	"productName": "modloader64 gui",
+	"version": "0.0.0",
+	"description": "My remarkable app",
+	"license": "GPL",
+	"repository": "denoflionsx/modloader64-gui",
+	"author": {
+		"name": "Denoflions",
+		"email": "denvstheworld@gmail.com",
+		"url": "http://hylianmodding.com"
+	},
+	"scripts": {
+		"postinstall": "electron-builder install-app-deps",
+		"lint": "xo",
+		"test": "npm run lint",
+		"start": "electron .",
+		"pack": "electron-builder --dir",
+		"dist": "electron-builder --windows",
+		"release": "np"
+	},
+	"dependencies": {
+		"electron-context-menu": "^0.12.1",
+		"electron-debug": "^3.0.0",
+		"electron-store": "^3.3.0",
+		"electron-unhandled": "^2.2.0",
+		"electron-updater": "^4.0.6",
+		"electron-util": "^0.12.0"
+	},
+	"devDependencies": {
+		"electron": "^5.0.4",
+		"electron-builder": "^20.43.0",
+		"np": "^5.0.3",
+		"xo": "^0.24.0"
+	},
+	"xo": {
+		"envs": [
+			"node",
+			"browser"
+		]
+	},
+	"np": {
+		"publish": false,
+		"releaseDraft": false
+	},
+	"build": {
+		"appId": "com.denoflionsx.modloader64-gui",
+		"mac": {
+			"category": "public.app-category.social-networking",
+			"darkModeSupport": true
+		},
+		"dmg": {
+			"iconSize": 160,
+			"contents": [
+				{
+					"x": 180,
+					"y": 170
+				},
+				{
+					"x": 480,
+					"y": 170,
+					"type": "link",
+					"path": "/Applications"
+				}
+			]
+		},
+		"linux": {
+			"target": [
+				"AppImage",
+				"deb"
+			],
+			"category": "Network;Chat"
+		}
+	}
+}
