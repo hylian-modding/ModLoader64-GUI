@@ -1,3 +1,6 @@
 node_modules
 yarn.lock
 /dist
+app/
+.vs/
+ModLoader/

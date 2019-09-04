@@ -4,9 +4,9 @@
 	"version": "0.0.0",
 	"description": "My remarkable app",
 	"license": "GPL",
-	"repository": "denoflionsx/modloader64-gui",
+	"repository": "hylianmodding/modloader64-gui",
 	"author": {
-		"name": "Denoflions",
+		"name": "denoflions",
 		"email": "denvstheworld@gmail.com",
 		"url": "http://hylianmodding.com"
 	},
@@ -14,9 +14,10 @@
 		"postinstall": "electron-builder install-app-deps",
 		"lint": "xo",
 		"test": "npm run lint",
-		"start": "electron .",
-		"pack": "electron-builder --dir",
-		"dist": "electron-builder --windows",
+		"start": "tsc && node ./fix_browser.js && electron ./app",
+		"start_debug": "electron ./app",
+		"pack": "tsc && electron-builder --dir && node ./modules.js",
+		"dist": "tsc && electron-builder --windows",
 		"release": "np"
 	},
 	"dependencies": {
@@ -25,12 +26,19 @@
 		"electron-store": "^3.3.0",
 		"electron-unhandled": "^2.2.0",
 		"electron-updater": "^4.0.6",
-		"electron-util": "^0.12.0"
+		"electron-util": "^0.12.0",
+		"eventemitter2": "^5.0.1",
+		"mkdir-recursive": "^0.4.0",
+		"source-map-support": "^0.5.13"
 	},
 	"devDependencies": {
+		"copy-node-modules": "^1.1.1",
 		"electron": "^5.0.4",
 		"electron-builder": "^20.43.0",
+		"gts": "^1.1.0",
+		"ncp": "^2.0.0",
 		"np": "^5.0.3",
+		"typescript": "^3.6.2",
 		"xo": "^0.24.0"
 	},
 	"xo": {
@@ -44,10 +52,13 @@
 		"releaseDraft": false
 	},
 	"build": {
-		"appId": "com.denoflionsx.modloader64-gui",
+		"appId": "com.hylianmodding.modloader64-gui",
 		"mac": {
 			"category": "public.app-category.social-networking",
 			"darkModeSupport": true
+		},
+		"directories": {
+			"app": "./app"
 		},
 		"dmg": {
 			"iconSize": 160,
