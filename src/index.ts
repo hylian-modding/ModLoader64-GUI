@@ -10,12 +10,13 @@ import { Pak } from './PakFormat';
 import { fork, ForkOptions } from 'child_process';
 import fs from 'fs';
 import menu from './menu';
-import { MessageLayer, MessageProcessor } from './MessageLayer';
+import { MessageLayer } from './MessageLayer';
+import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
 
 require('source-map-support').install();
 
 unhandled();
-//debug();
+debug();
 contextMenu();
 
 // Note: Must match `build.appId` in package.json
@@ -34,17 +35,18 @@ app.setAppUserModelId('com.hylianmodding.modloader64-gui');
 
 // Prevent window from being garbage collected
 let mainWindow: any;
+let ModLoader64: any;
 
 class NodeSideMessageHandlers {
 	layer: MessageLayer;
 
 	constructor(emitter: any, retriever: any) {
-		this.layer = new MessageLayer(emitter, retriever, "send");
+		this.layer = new MessageLayer("internal_event_bus", emitter, retriever);
 		this.layer.setupMessageProcessor(this);
 	}
 
-	@MessageProcessor("electronSetup")
-	onTest(obj: any) {
+	@TunnelMessageHandler("electronSetup")
+	onSetup(obj: any) {
 		startModLoader();
 	}
 }
@@ -112,19 +114,49 @@ app.on('activate', () => {
 	mainWindow = await createMainWindow();
 })();
 
+function apiHandler(evt: GUITunnelPacket) {
+	console.log(evt);
+	switch (evt.event) {
+		case "openWindow":
+			let win = new BrowserWindow({
+				title: app.getName(),
+				show: false,
+				width: evt.data[0].width,
+				height: evt.data[0].height,
+				webPreferences: {
+					nodeIntegration: true
+				}
+			});
+
+			win.on('ready-to-show', () => {
+				win.show();
+			});
+
+			win.loadFile(evt.data[0].file);
+			break;
+	}
+}
+
 function startModLoader() {
 	if (fs.existsSync("./ModLoader.pak")) {
-		handlers.layer.emit("onStatus", "Extracting update...");
+		handlers.layer.send("onStatus", "Extracting update...");
 		let pak: Pak = new Pak("./ModLoader.pak");
 		pak.extractAll("./");
+		fs.unlinkSync("./ModLoader.pak");
 	}
 	const options = {
 		stdio: ['pipe', 'pipe', 'pipe', 'ipc']
 	};
-	handlers.layer.emit("onStatus", "Spinning up...");
-	let ml = fork("./ModLoader/src/index.js", ['--dir=./ModLoader'], options as ForkOptions);
-	ml.on('message', message => {
-		let evt: any = JSON.parse(message);
-		handlers.layer.emit("onStatus", evt.id);
+	handlers.layer.send("onStatus", "Spinning up...");
+	ModLoader64 = fork("./ModLoader/src/index.js", ['--dir=./ModLoader'], options as ForkOptions);
+	ModLoader64.on('message', (message: string) => {
+		let evt: GUITunnelPacket = JSON.parse(message);
+		if (evt.id === "internal_event_bus") {
+			handlers.layer.send("onStatus", evt.event);
+		} else if (evt.id === "modloader64_api") {
+			apiHandler(evt);
+		} else {
+			handlers.layer.send(evt.event as string, evt);
+		}
 	});
 }

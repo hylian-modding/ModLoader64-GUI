@@ -1,31 +1,44 @@
 import { EventEmitter2 } from 'eventemitter2';
+import { GUITunnelPacket } from './GUITunnel';
 
 export class MessageLayer {
 
+	private id: string;
 	private emitter: any;
 	private retriever: any;
 	private emitKey: string;
 	private backingEmitter: EventEmitter2 = new EventEmitter2();
+	private child!: any;
 
-	constructor(emitter: any, retriever: any, emitKey: string) {
+	constructor(id: string, emitter: any, retriever: any) {
+		this.id = id;
 		this.emitter = emitter;
 		this.retriever = retriever;
-		this.emitKey = emitKey;
+		this.emitKey = "send";
 	}
 
-	emit(key: string, evt: any) {
+	bindChild(child: any) {
+		this.child = child;
+	}
+
+	send(key: string, evt: any) {
 		this.emitter[this.emitKey](key, evt);
+		if (this.child !== null && this.child !== undefined) {
+			if (this.child.send) {
+				this.child.send(JSON.stringify(new GUITunnelPacket(this.id, key, evt)));
+			}
+		}
 	}
 
 	setupMessageProcessor(instance: any) {
 		let p = Object.getPrototypeOf(instance);
 		if (p.hasOwnProperty('ModLoader')) {
-			if (p.ModLoader.hasOwnProperty('MessageProcessor')) {
+			if (p.ModLoader.hasOwnProperty('TunnelMessageHandler')) {
 				if (
-					p.ModLoader.MessageProcessor.hasOwnProperty('MessageHandlers') !== null
+					p.ModLoader.TunnelMessageHandler.hasOwnProperty('MessageHandlers') !== null
 				) {
 					((inst: MessageLayer) => {
-						p.ModLoader.MessageProcessor.MessageHandlers.forEach(function (
+						p.ModLoader.TunnelMessageHandler.MessageHandlers.forEach(function (
 							value: string,
 							key: string
 						) {
@@ -40,26 +53,4 @@ export class MessageLayer {
 			}
 		}
 	}
-}
-
-export function MessageProcessor(key: string) {
-	return function (
-		target: any,
-		propertyKey: string,
-		descriptor: PropertyDescriptor
-	) {
-		if (target.ModLoader === undefined) {
-			target['ModLoader'] = {};
-		}
-		if (target.ModLoader.MessageProcessor === undefined) {
-			target.ModLoader['MessageProcessor'] = {};
-		}
-		if (target.ModLoader.MessageProcessor.MessageHandlers === undefined) {
-			target.ModLoader.MessageProcessor['MessageHandlers'] = new Map<
-				string,
-				Function
-			>();
-		}
-		target.ModLoader.MessageProcessor.MessageHandlers.set(key, propertyKey);
-	};
 }
