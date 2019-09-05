@@ -10,12 +10,3 @@ copyNodeModules(srcDir, dstDir, { devDependencies: false }, (err, results) => {
 	}
 	exec("asar pack ./app ./dist/win-ia32-unpacked/resources/app.asar");
 });
-
-const ncp = require('ncp');
-
-ncp("./src", "./app", function (err) {
-	if (err) {
-		return console.error(err);
-	}
-	console.log('done!');
-});

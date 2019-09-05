@@ -14,7 +14,7 @@
 		"postinstall": "electron-builder install-app-deps",
 		"lint": "xo",
 		"test": "npm run lint",
-		"start": "tsc && node ./fix_browser.js && electron ./app",
+		"start": "node ./resources.js && tsc && node ./fix_browser.js && electron ./app",
 		"start_debug": "electron ./app",
 		"pack": "tsc && electron-builder --dir && node ./modules.js",
 		"dist": "tsc && electron-builder --windows",
@@ -32,6 +32,7 @@
 		"source-map-support": "^0.5.13"
 	},
 	"devDependencies": {
+		"@types/jquery": "^3.3.31",
 		"copy-node-modules": "^1.1.1",
 		"electron": "^5.0.4",
 		"electron-builder": "^20.43.0",

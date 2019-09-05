@@ -1,0 +1,9 @@
+body {
+	background-image: url("background.png");
+	background-repeat: no-repeat;
+}
+
+@font-face {
+    font-family: "Nintend";
+    src: url("./Nintend Bold.otf") format("opentype");
+}

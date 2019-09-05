@@ -6,9 +6,7 @@ import { is } from 'electron-util';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
 import contextMenu from 'electron-context-menu';
-import { Pak } from './PakFormat';
 import { fork, ForkOptions } from 'child_process';
-import fs from 'fs';
 import menu from './menu';
 import { MessageLayer } from './MessageLayer';
 import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
@@ -16,8 +14,8 @@ import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
 require('source-map-support').install();
 
 unhandled();
-debug();
-contextMenu();
+//debug();
+//contextMenu();
 
 // Note: Must match `build.appId` in package.json
 app.setAppUserModelId('com.hylianmodding.modloader64-gui');
@@ -34,8 +32,12 @@ app.setAppUserModelId('com.hylianmodding.modloader64-gui');
 // }
 
 // Prevent window from being garbage collected
+let loadingWindow: any;
 let mainWindow: any;
 let ModLoader64: any;
+let updateProcess: any;
+let transitionTimer: any;
+let runningWindow: any;
 
 class NodeSideMessageHandlers {
 	layer: MessageLayer;
@@ -47,11 +49,77 @@ class NodeSideMessageHandlers {
 
 	@TunnelMessageHandler("electronSetup")
 	onSetup(obj: any) {
+	}
+
+	@TunnelMessageHandler("onStartButtonPressed")
+	async onStart(obj: any) {
+		mainWindow.hide();
+		if (runningWindow === null || runningWindow === undefined) {
+			runningWindow = await createRunningWindow();
+		}
 		startModLoader();
 	}
 }
 
 var handlers: NodeSideMessageHandlers;
+
+const createLoadingWindow = async () => {
+	const win = new BrowserWindow({
+		title: app.getName(),
+		show: false,
+		width: 400,
+		height: 200,
+		webPreferences: {
+			nodeIntegration: true
+		},
+		frame: false
+	});
+
+	win.on('ready-to-show', () => {
+		win.show();
+		updateProcess = fork(__dirname + "/unpakUpdate.js");
+		updateProcess.on('exit', (code: number, signal: string) => {
+			if (code === 1) {
+				app.relaunch();
+				app.exit();
+			}
+			updateProcess = null;
+		});
+	});
+
+	win.on('closed', () => {
+		loadingWindow = undefined;
+	});
+
+	await win.loadFile(path.join(__dirname, 'loading.html'));
+
+	return win;
+};
+
+const createRunningWindow = async () => {
+	const win = new BrowserWindow({
+		title: app.getName(),
+		show: false,
+		width: 600,
+		height: 400,
+		x: mainWindow.x,
+		y: mainWindow.y,
+		webPreferences: {
+			nodeIntegration: true
+		},
+		frame: false
+	});
+
+	win.on('ready-to-show', () => {
+		win.show();
+	});
+
+	await win.loadFile(path.join(__dirname, 'running.html'));
+
+	win.setPosition(mainWindow.getPosition()[0], mainWindow.getPosition()[1]);
+
+	return win;
+};
 
 const createMainWindow = async () => {
 	const win = new BrowserWindow({
@@ -65,12 +133,16 @@ const createMainWindow = async () => {
 	});
 
 	win.on('ready-to-show', () => {
-		win.show();
+		transitionTimer = setInterval(() => {
+			if (loadingWindow && updateProcess == null) {
+				loadingWindow.close();
+				win.show();
+				clearInterval(transitionTimer);
+			}
+		}, 1000);
 	});
 
 	win.on('closed', () => {
-		// Dereference the window
-		// For multiple windows store them in an array
 		mainWindow = undefined;
 	});
 
@@ -91,7 +163,6 @@ app.on('second-instance', () => {
 		if (mainWindow.isMinimized()) {
 			mainWindow.restore();
 		}
-
 		mainWindow.show();
 	}
 });
@@ -111,11 +182,11 @@ app.on('activate', () => {
 (async () => {
 	await app.whenReady();
 	Menu.setApplicationMenu(menu);
+	loadingWindow = await createLoadingWindow();
 	mainWindow = await createMainWindow();
 })();
 
 function apiHandler(evt: GUITunnelPacket) {
-	console.log(evt);
 	switch (evt.event) {
 		case "openWindow":
 			let win = new BrowserWindow({
@@ -130,6 +201,7 @@ function apiHandler(evt: GUITunnelPacket) {
 
 			win.on('ready-to-show', () => {
 				win.show();
+				win.setParentWindow(runningWindow);
 			});
 
 			win.loadFile(evt.data[0].file);
@@ -138,16 +210,9 @@ function apiHandler(evt: GUITunnelPacket) {
 }
 
 function startModLoader() {
-	if (fs.existsSync("./ModLoader.pak")) {
-		handlers.layer.send("onStatus", "Extracting update...");
-		let pak: Pak = new Pak("./ModLoader.pak");
-		pak.extractAll("./");
-		fs.unlinkSync("./ModLoader.pak");
-	}
 	const options = {
 		stdio: ['pipe', 'pipe', 'pipe', 'ipc']
 	};
-	handlers.layer.send("onStatus", "Spinning up...");
 	ModLoader64 = fork("./ModLoader/src/index.js", ['--dir=./ModLoader'], options as ForkOptions);
 	ModLoader64.on('message', (message: string) => {
 		let evt: GUITunnelPacket = JSON.parse(message);
@@ -158,5 +223,12 @@ function startModLoader() {
 		} else {
 			handlers.layer.send(evt.event as string, evt);
 		}
+	});
+	ModLoader64.on('exit', () => {
+		mainWindow.setPosition(runningWindow.getPosition()[0], runningWindow.getPosition()[1]);
+		runningWindow.close();
+		runningWindow = null;
+		mainWindow.show();
+		ModLoader64 = null;
 	});
 }
