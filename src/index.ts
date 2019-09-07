@@ -10,7 +10,7 @@ import { fork, ForkOptions } from 'child_process';
 import menu from './menu';
 import { MessageLayer } from './MessageLayer';
 import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
-import { ModManager } from './ModManager';
+import { ModManager, ModStatus } from './ModManager';
 import fs from 'fs';
 import { GUIValues } from './GUIValues';
 import { RomManager } from './RomManager';
@@ -70,6 +70,11 @@ class NodeSideMessageHandlers {
     config['ModLoader64'].rom = values.rom;
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     startModLoader();
+  }
+
+  @TunnelMessageHandler('onModStatusChanged')
+  onModStatusChanged(mod: ModStatus) {
+    mods.changeStatus(mod);
   }
 }
 

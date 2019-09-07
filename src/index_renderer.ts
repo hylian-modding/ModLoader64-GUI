@@ -1,7 +1,7 @@
 import { MessageLayer } from './MessageLayer';
 import { ipcRenderer } from 'electron';
 import { TunnelMessageHandler } from './GUITunnel';
-import { ModManager, Mod } from './ModManager';
+import { ModManager, Mod, ModStatus } from './ModManager';
 import { GUIValues } from './GUIValues';
 import { RomManager, Rom } from './RomManager';
 
@@ -57,43 +57,37 @@ class GeneralFormHandler {
 
 const formHandler: GeneralFormHandler = new GeneralFormHandler();
 
-function injectItemElement(
-  parentName: string,
-  name: string,
-  _icon: string,
-  version: string,
-  elemBaseName?: string
-) {
-  let parent = document.getElementById(parentName);
+function injectItemElement(mod: Mod) {
+  let parent = document.getElementById('mods');
   if (parent !== null && parent !== undefined) {
     let entry = document.createElement('div');
     let chk = document.createElement('input');
-    if (elemBaseName !== null && elemBaseName !== undefined) {
-      chk.id = elemBaseName;
-    } else {
-      chk.id = name;
-    }
+    chk.id = mod.meta.name;
     entry.appendChild(chk);
     let icon = document.createElement('img');
-    icon.src = 'data:image/png;base64, ' + _icon;
+    icon.src = 'data:image/png;base64, ' + mod.icon;
     icon.width = 30;
     icon.height = 30;
     entry.appendChild(icon);
     let text = document.createElement('span');
-    text.textContent = ' ' + name + ' ' + version;
+    text.textContent = ' ' + mod.meta.name + ' ' + mod.meta.version;
     entry.appendChild(text);
     parent.appendChild(entry);
-    if (elemBaseName !== null && elemBaseName !== undefined) {
-      //@ts-ignore
-      $('#' + elemBaseName).checkbox({
-        checked: true,
-      });
-    } else {
-      //@ts-ignore
-      $('#' + name).checkbox({
-        checked: true,
-      });
+    let box;
+    box = $('#' + mod.meta.name);
+    let isChecked = true;
+    if (mod.file.indexOf('.disabled') > -1) {
+      isChecked = false;
     }
+    //@ts-ignore
+    box.checkbox({
+      checked: isChecked,
+      onChange: (checked: boolean) => {
+        let status: ModStatus = new ModStatus(mod);
+        status.enabled = checked;
+        handlers.layer.send('onModStatusChanged', status);
+      },
+    });
   }
 }
 
@@ -169,12 +163,7 @@ class WebSideMessageHandlers {
   @TunnelMessageHandler('readMods')
   onMods(mods: ModManager) {
     mods.mods.forEach((mod: Mod) => {
-      injectItemElement(
-        'mods',
-        mod.meta.name,
-        mod.icon as string,
-        mod.meta.version
-      );
+      injectItemElement(mod);
     });
   }
 
