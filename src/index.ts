@@ -148,6 +148,8 @@ const createMainWindow = async () => {
           setInterval(() => {
             if (status === 'onPostInitDone') {
               ModLoader64.kill();
+            }
+            if (ModLoader64 === null) {
               app.relaunch();
               app.exit();
             }

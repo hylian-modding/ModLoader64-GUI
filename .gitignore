@@ -4,3 +4,4 @@ yarn.lock
 app/
 .vs/
 ModLoader/
+update.json
