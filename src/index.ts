@@ -12,6 +12,7 @@ import { MessageLayer } from './MessageLayer';
 import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
 import { ModManager } from './ModManager';
 import fs from 'fs';
+import { GUIValues } from './GUIValues';
 
 require('source-map-support').install();
 
@@ -55,7 +56,15 @@ class NodeSideMessageHandlers {
   onSetup(obj: any) {}
 
   @TunnelMessageHandler('onStartButtonPressed')
-  async onStart(obj: any) {
+  async onStart(values: GUIValues) {
+    let configPath: string = path.resolve(
+      path.join('./ModLoader', 'ModLoader64-config.json')
+    );
+    let config: any = JSON.parse(fs.readFileSync(configPath).toString());
+    config['NetworkEngine.Client'].nickname = values.nickname;
+    config['NetworkEngine.Client'].lobby = values.lobby;
+    config['NetworkEngine.Client'].password = values.password;
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     startModLoader();
   }
 }
@@ -154,6 +163,15 @@ const createMainWindow = async () => {
               app.exit();
             }
           }, 1000);
+        } else {
+          // We have a config.
+          console.log('Loading config.');
+          let config: any = JSON.parse(
+            fs
+              .readFileSync(path.join('./ModLoader', 'ModLoader64-config.json'))
+              .toString()
+          );
+          handlers.layer.send('onConfigLoaded', config);
         }
       }
     }, 1000);
