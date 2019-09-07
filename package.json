@@ -14,13 +14,16 @@
 		"postinstall": "electron-builder install-app-deps",
 		"lint": "xo",
 		"test": "npm run lint",
-		"start": "node ./resources.js && tsc && node ./fix_browser.js && electron ./app",
+		"build": "node ./resources.js && tsc && node ./fix_browser.js",
+		"start": "npm run build && electron ./app",
 		"start_debug": "electron ./app",
-		"pack": "tsc && electron-builder --dir && node ./modules.js",
-		"dist": "tsc && electron-builder --windows",
+		"pack": "npm run build && electron-builder --dir && node ./modules.js",
+		"dist": "npm run build && electron-builder --windows && node ./modules.js",
 		"release": "np"
 	},
 	"dependencies": {
+		"buffer-json": "^2.0.0",
+		"download-file": "^0.1.5",
 		"electron-context-menu": "^0.12.1",
 		"electron-debug": "^3.0.0",
 		"electron-store": "^3.3.0",
@@ -29,10 +32,12 @@
 		"electron-util": "^0.12.0",
 		"eventemitter2": "^5.0.1",
 		"mkdir-recursive": "^0.4.0",
+		"request": "^2.88.0",
 		"source-map-support": "^0.5.13"
 	},
 	"devDependencies": {
 		"@types/jquery": "^3.3.31",
+		"@types/request": "^2.48.2",
 		"copy-node-modules": "^1.1.1",
 		"electron": "^5.0.4",
 		"electron-builder": "^20.43.0",

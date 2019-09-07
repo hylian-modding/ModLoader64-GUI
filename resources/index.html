@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>modloader64 gui</title>
-	<link rel="stylesheet" type="text/css" href="./themes/gray/easyui.css">
+	<link rel="stylesheet" type="text/css" href="./themes/black/easyui.css">
 	<link rel="stylesheet" type="text/css" href="./themes/icon.css">
 	<script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
 	<script type="text/javascript" src="./jquery-3.3.1.min.js"></script>
@@ -18,14 +18,16 @@
 		<img src="./ml64.png" width="5%" height="5%" />
 		<span style="font-family: Nintend; font-size: 20pt; color: #0124a6">ModLoader</span><span
 			style="font-size: 20pt; color: #ff2d1e">64</span>
+			<img src="./cone.png" width="5%" height="5%"/>
 	</p>
 	<div class="easyui-tabs">
-		<div title="Tab 1" style="padding:10px">
-			<a href="#" id="start" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Start</a>
+		<div title="General" style="padding:10px">
+			<input class="easyui-textbox" data-options="iconCls:'icon-man'" style="width:200px" prompt="username"><br/>
+			<input class="easyui-textbox" data-options="iconCls:'icon-filter'" style="width:200px" prompt="lobby"><br/>
+			<input class="easyui-passwordbox" data-options="iconCls:'icon-lock'" style="width:200px" prompt="password"><br/>
+			<br/><a href="#" id="start" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Start</a>
 		</div>
-		<div title="Tab 2" style="padding:10px">
-		</div>
-		<div title="Tab 3" style="padding:10px">
+		<div id="mods" title="Mods" style="padding:10px">
 		</div>
 	</div>
 	<script src="./index_renderer.js"></script>

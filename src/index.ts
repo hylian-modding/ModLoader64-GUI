@@ -10,6 +10,8 @@ import { fork, ForkOptions } from 'child_process';
 import menu from './menu';
 import { MessageLayer } from './MessageLayer';
 import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
+import { ModManager } from './ModManager';
+import fs from 'fs';
 
 require('source-map-support').install();
 
@@ -32,12 +34,14 @@ app.setAppUserModelId('com.hylianmodding.modloader64-gui');
 // }
 
 // Prevent window from being garbage collected
+let status: string;
 let loadingWindow: any;
 let mainWindow: any;
 let ModLoader64: any;
 let updateProcess: any;
 let transitionTimer: any;
 let runningWindow: any;
+let mods: ModManager;
 
 class NodeSideMessageHandlers {
 	layer: MessageLayer;
@@ -53,10 +57,6 @@ class NodeSideMessageHandlers {
 
 	@TunnelMessageHandler("onStartButtonPressed")
 	async onStart(obj: any) {
-		mainWindow.hide();
-		if (runningWindow === null || runningWindow === undefined) {
-			runningWindow = await createRunningWindow();
-		}
 		startModLoader();
 	}
 }
@@ -79,7 +79,7 @@ const createLoadingWindow = async () => {
 		win.show();
 		updateProcess = fork(__dirname + "/unpakUpdate.js");
 		updateProcess.on('exit', (code: number, signal: string) => {
-			if (code === 1) {
+			if (code === 1852400485) {
 				app.relaunch();
 				app.exit();
 			}
@@ -136,8 +136,22 @@ const createMainWindow = async () => {
 		transitionTimer = setInterval(() => {
 			if (loadingWindow && updateProcess == null) {
 				loadingWindow.close();
+				mods = new ModManager();
+				mods.scanMods();
 				win.show();
 				clearInterval(transitionTimer);
+				handlers.layer.send("readMods", mods);
+				if (!fs.existsSync(path.join("./ModLoader", "ModLoader64-config.json"))) {
+					// Need to generate the config.
+					startModLoader();
+					setInterval(() => {
+						if (status === "onPostInitDone") {
+							ModLoader64.kill();
+							app.relaunch();
+							app.exit();
+						}
+					}, 1000);
+				}
 			}
 		}, 1000);
 	});
@@ -209,7 +223,11 @@ function apiHandler(evt: GUITunnelPacket) {
 	}
 }
 
-function startModLoader() {
+async function startModLoader() {
+	mainWindow.hide();
+	if (runningWindow === null || runningWindow === undefined) {
+		runningWindow = await createRunningWindow();
+	}
 	const options = {
 		stdio: ['pipe', 'pipe', 'pipe', 'ipc']
 	};
@@ -218,6 +236,7 @@ function startModLoader() {
 		let evt: GUITunnelPacket = JSON.parse(message);
 		if (evt.id === "internal_event_bus") {
 			handlers.layer.send("onStatus", evt.event);
+			status = evt.event as string;
 		} else if (evt.id === "modloader64_api") {
 			apiHandler(evt);
 		} else {
@@ -225,10 +244,13 @@ function startModLoader() {
 		}
 	});
 	ModLoader64.on('exit', () => {
-		mainWindow.setPosition(runningWindow.getPosition()[0], runningWindow.getPosition()[1]);
-		runningWindow.close();
-		runningWindow = null;
-		mainWindow.show();
-		ModLoader64 = null;
+		try {
+			mainWindow.setPosition(runningWindow.getPosition()[0], runningWindow.getPosition()[1]);
+			runningWindow.close();
+			runningWindow = null;
+			mainWindow.show();
+			ModLoader64 = null;
+		} catch (err) {
+		}
 	});
 }

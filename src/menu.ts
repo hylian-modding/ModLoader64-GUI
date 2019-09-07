@@ -17,11 +17,11 @@ const showPreferences = () => {
 const helpSubmenu = [
 	openUrlMenuItem({
 		label: 'Website',
-		url: 'https://github.com/denoflionsx/undefined'
+		url: 'https://github.com/hylian-modding/modloader64-gui'
 	}),
 	openUrlMenuItem({
 		label: 'Source Code',
-		url: 'https://github.com/denoflionsx/undefined'
+		url: 'https://github.com/hylian-modding/modloader64-gui'
 	}),
 	{
 		label: 'Report an Issue…',
@@ -35,7 +35,7 @@ const helpSubmenu = [
 ${debugInfo()}`;
 
 			openNewGitHubIssue({
-				user: 'denoflionsx',
+				user: 'hylian-modding',
 				repo: 'modloader64-gui',
 				body
 			});
