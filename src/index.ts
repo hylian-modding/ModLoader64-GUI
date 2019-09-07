@@ -146,7 +146,7 @@ const createMainWindow = async () => {
           // Need to generate the config.
           startModLoader();
           setInterval(() => {
-            if (status === 'onPostInitDone') {
+            if (ModLoader64 !== null && status === 'onPostInitDone') {
               ModLoader64.kill();
             }
             if (ModLoader64 === null) {
