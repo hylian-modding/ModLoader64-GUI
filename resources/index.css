@@ -1,6 +1,7 @@
 body {
 	background-image: url("./background_dark.png");
 	background-repeat: no-repeat;
+	font-family: sans-serif;
 }
 
 @font-face {
