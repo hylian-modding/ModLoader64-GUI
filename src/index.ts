@@ -44,213 +44,220 @@ let runningWindow: any;
 let mods: ModManager;
 
 class NodeSideMessageHandlers {
-	layer: MessageLayer;
+  layer: MessageLayer;
 
-	constructor(emitter: any, retriever: any) {
-		this.layer = new MessageLayer("internal_event_bus", emitter, retriever);
-		this.layer.setupMessageProcessor(this);
-	}
+  constructor(emitter: any, retriever: any) {
+    this.layer = new MessageLayer('internal_event_bus', emitter, retriever);
+    this.layer.setupMessageProcessor(this);
+  }
 
-	@TunnelMessageHandler("electronSetup")
-	onSetup(obj: any) {
-	}
+  @TunnelMessageHandler('electronSetup')
+  onSetup(obj: any) {}
 
-	@TunnelMessageHandler("onStartButtonPressed")
-	async onStart(obj: any) {
-		startModLoader();
-	}
+  @TunnelMessageHandler('onStartButtonPressed')
+  async onStart(obj: any) {
+    startModLoader();
+  }
 }
 
-var handlers: NodeSideMessageHandlers;
+let handlers: NodeSideMessageHandlers;
 
 const createLoadingWindow = async () => {
-	const win = new BrowserWindow({
-		title: app.getName(),
-		show: false,
-		width: 400,
-		height: 200,
-		webPreferences: {
-			nodeIntegration: true
-		},
-		frame: false
-	});
+  const win = new BrowserWindow({
+    title: app.getName(),
+    show: false,
+    width: 400,
+    height: 200,
+    webPreferences: {
+      nodeIntegration: true,
+    },
+    frame: false,
+  });
 
-	win.on('ready-to-show', () => {
-		win.show();
-		updateProcess = fork(__dirname + "/unpakUpdate.js");
-		updateProcess.on('exit', (code: number, signal: string) => {
-			if (code === 1852400485) {
-				app.relaunch();
-				app.exit();
-			}
-			updateProcess = null;
-		});
-	});
+  win.on('ready-to-show', () => {
+    win.show();
+    updateProcess = fork(__dirname + '/unpakUpdate.js');
+    updateProcess.on('exit', (code: number, signal: string) => {
+      if (code === 1852400485) {
+        app.relaunch();
+        app.exit();
+      }
+      updateProcess = null;
+    });
+  });
 
-	win.on('closed', () => {
-		loadingWindow = undefined;
-	});
+  win.on('closed', () => {
+    loadingWindow = undefined;
+  });
 
-	await win.loadFile(path.join(__dirname, 'loading.html'));
+  await win.loadFile(path.join(__dirname, 'loading.html'));
 
-	return win;
+  return win;
 };
 
 const createRunningWindow = async () => {
-	const win = new BrowserWindow({
-		title: app.getName(),
-		show: false,
-		width: 600,
-		height: 400,
-		x: mainWindow.x,
-		y: mainWindow.y,
-		webPreferences: {
-			nodeIntegration: true
-		},
-		frame: false
-	});
+  const win = new BrowserWindow({
+    title: app.getName(),
+    show: false,
+    width: 600,
+    height: 400,
+    x: mainWindow.x,
+    y: mainWindow.y,
+    webPreferences: {
+      nodeIntegration: true,
+    },
+    frame: false,
+  });
 
-	win.on('ready-to-show', () => {
-		win.show();
-	});
+  win.on('ready-to-show', () => {
+    win.show();
+  });
 
-	await win.loadFile(path.join(__dirname, 'running.html'));
+  await win.loadFile(path.join(__dirname, 'running.html'));
 
-	win.setPosition(mainWindow.getPosition()[0], mainWindow.getPosition()[1]);
+  win.setPosition(mainWindow.getPosition()[0], mainWindow.getPosition()[1]);
 
-	return win;
+  return win;
 };
 
 const createMainWindow = async () => {
-	const win = new BrowserWindow({
-		title: app.getName(),
-		show: false,
-		width: 600,
-		height: 400,
-		webPreferences: {
-			nodeIntegration: true
-		}
-	});
+  const win = new BrowserWindow({
+    title: app.getName(),
+    show: false,
+    width: 600,
+    height: 400,
+    webPreferences: {
+      nodeIntegration: true,
+    },
+  });
 
-	win.on('ready-to-show', () => {
-		transitionTimer = setInterval(() => {
-			if (loadingWindow && updateProcess == null) {
-				loadingWindow.close();
-				mods = new ModManager();
-				mods.scanMods();
-				win.show();
-				clearInterval(transitionTimer);
-				handlers.layer.send("readMods", mods);
-				if (!fs.existsSync(path.join("./ModLoader", "ModLoader64-config.json"))) {
-					// Need to generate the config.
-					startModLoader();
-					setInterval(() => {
-						if (status === "onPostInitDone") {
-							ModLoader64.kill();
-							app.relaunch();
-							app.exit();
-						}
-					}, 1000);
-				}
-			}
-		}, 1000);
-	});
+  win.on('ready-to-show', () => {
+    transitionTimer = setInterval(() => {
+      if (loadingWindow && updateProcess == null) {
+        loadingWindow.close();
+        mods = new ModManager();
+        mods.scanMods();
+        win.show();
+        clearInterval(transitionTimer);
+        handlers.layer.send('readMods', mods);
+        if (
+          !fs.existsSync(path.join('./ModLoader', 'ModLoader64-config.json'))
+        ) {
+          // Need to generate the config.
+          startModLoader();
+          setInterval(() => {
+            if (status === 'onPostInitDone') {
+              ModLoader64.kill();
+              app.relaunch();
+              app.exit();
+            }
+          }, 1000);
+        }
+      }
+    }, 1000);
+  });
 
-	win.on('closed', () => {
-		mainWindow = undefined;
-	});
+  win.on('closed', () => {
+    mainWindow = undefined;
+  });
 
-	await win.loadFile(path.join(__dirname, 'index.html'));
+  await win.loadFile(path.join(__dirname, 'index.html'));
 
-	//mainWindow.webContents.send("GUI_ConfigLoaded", {});
-	handlers = new NodeSideMessageHandlers(win.webContents, ipcMain);
-	return win;
+  //mainWindow.webContents.send("GUI_ConfigLoaded", {});
+  handlers = new NodeSideMessageHandlers(win.webContents, ipcMain);
+  return win;
 };
 
 // Prevent multiple instances of the app
 if (!app.requestSingleInstanceLock()) {
-	app.quit();
+  app.quit();
 }
 
 app.on('second-instance', () => {
-	if (mainWindow) {
-		if (mainWindow.isMinimized()) {
-			mainWindow.restore();
-		}
-		mainWindow.show();
-	}
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) {
+      mainWindow.restore();
+    }
+    mainWindow.show();
+  }
 });
 
 app.on('window-all-closed', () => {
-	if (!is.macos) {
-		app.quit();
-	}
+  if (!is.macos) {
+    app.quit();
+  }
 });
 
 app.on('activate', () => {
-	if (!mainWindow) {
-		mainWindow = createMainWindow();
-	}
+  if (!mainWindow) {
+    mainWindow = createMainWindow();
+  }
 });
 
 (async () => {
-	await app.whenReady();
-	Menu.setApplicationMenu(menu);
-	loadingWindow = await createLoadingWindow();
-	mainWindow = await createMainWindow();
+  await app.whenReady();
+  Menu.setApplicationMenu(menu);
+  loadingWindow = await createLoadingWindow();
+  mainWindow = await createMainWindow();
 })();
 
 function apiHandler(evt: GUITunnelPacket) {
-	switch (evt.event) {
-		case "openWindow":
-			let win = new BrowserWindow({
-				title: app.getName(),
-				show: false,
-				width: evt.data[0].width,
-				height: evt.data[0].height,
-				webPreferences: {
-					nodeIntegration: true
-				}
-			});
+  switch (evt.event) {
+    case 'openWindow':
+      let win = new BrowserWindow({
+        title: app.getName(),
+        show: false,
+        width: evt.data[0].width,
+        height: evt.data[0].height,
+        webPreferences: {
+          nodeIntegration: true,
+        },
+      });
 
-			win.on('ready-to-show', () => {
-				win.show();
-				win.setParentWindow(runningWindow);
-			});
+      win.on('ready-to-show', () => {
+        win.show();
+        win.setParentWindow(runningWindow);
+      });
 
-			win.loadFile(evt.data[0].file);
-			break;
-	}
+      win.loadFile(evt.data[0].file);
+      break;
+  }
 }
 
 async function startModLoader() {
-	mainWindow.hide();
-	if (runningWindow === null || runningWindow === undefined) {
-		runningWindow = await createRunningWindow();
-	}
-	const options = {
-		stdio: ['pipe', 'pipe', 'pipe', 'ipc']
-	};
-	ModLoader64 = fork("./ModLoader/src/index.js", ['--dir=./ModLoader'], options as ForkOptions);
-	ModLoader64.on('message', (message: string) => {
-		let evt: GUITunnelPacket = JSON.parse(message);
-		if (evt.id === "internal_event_bus") {
-			handlers.layer.send("onStatus", evt.event);
-			status = evt.event as string;
-		} else if (evt.id === "modloader64_api") {
-			apiHandler(evt);
-		} else {
-			handlers.layer.send(evt.event as string, evt);
-		}
-	});
-	ModLoader64.on('exit', () => {
-		try {
-			mainWindow.setPosition(runningWindow.getPosition()[0], runningWindow.getPosition()[1]);
-			runningWindow.close();
-			runningWindow = null;
-			mainWindow.show();
-			ModLoader64 = null;
-		} catch (err) {
-		}
-	});
+  mainWindow.hide();
+  if (runningWindow === null || runningWindow === undefined) {
+    runningWindow = await createRunningWindow();
+  }
+  const options = {
+    stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+  };
+  ModLoader64 = fork(
+    './ModLoader/src/index.js',
+    ['--dir=./ModLoader'],
+    options as ForkOptions
+  );
+  ModLoader64.on('message', (message: string) => {
+    let evt: GUITunnelPacket = JSON.parse(message);
+    if (evt.id === 'internal_event_bus') {
+      handlers.layer.send('onStatus', evt.event);
+      status = evt.event as string;
+    } else if (evt.id === 'modloader64_api') {
+      apiHandler(evt);
+    } else {
+      handlers.layer.send(evt.event as string, evt);
+    }
+  });
+  ModLoader64.on('exit', () => {
+    try {
+      mainWindow.setPosition(
+        runningWindow.getPosition()[0],
+        runningWindow.getPosition()[1]
+      );
+      runningWindow.close();
+      runningWindow = null;
+      mainWindow.show();
+      ModLoader64 = null;
+    } catch (err) {}
+  });
 }

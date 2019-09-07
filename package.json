@@ -19,7 +19,8 @@
 		"start_debug": "electron ./app",
 		"pack": "npm run build && electron-builder --dir && node ./modules.js",
 		"dist": "npm run build && electron-builder --windows && node ./modules.js",
-		"release": "np"
+		"release": "np",
+		"fix": "gts fix"
 	},
 	"dependencies": {
 		"buffer-json": "^2.0.0",
