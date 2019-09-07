@@ -13,6 +13,7 @@ import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
 import { ModManager } from './ModManager';
 import fs from 'fs';
 import { GUIValues } from './GUIValues';
+import { RomManager } from './RomManager';
 
 require('source-map-support').install();
 
@@ -43,6 +44,7 @@ let updateProcess: any;
 let transitionTimer: any;
 let runningWindow: any;
 let mods: ModManager;
+let roms: RomManager;
 
 class NodeSideMessageHandlers {
   layer: MessageLayer;
@@ -64,6 +66,8 @@ class NodeSideMessageHandlers {
     config['NetworkEngine.Client'].nickname = values.nickname;
     config['NetworkEngine.Client'].lobby = values.lobby;
     config['NetworkEngine.Client'].password = values.password;
+    config['ModLoader64'].isServer = true;
+    config['ModLoader64'].rom = values.rom;
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     startModLoader();
   }
@@ -143,12 +147,13 @@ const createMainWindow = async () => {
   win.on('ready-to-show', () => {
     transitionTimer = setInterval(() => {
       if (loadingWindow && updateProcess == null) {
-        loadingWindow.close();
         mods = new ModManager();
         mods.scanMods();
-        win.show();
+        roms = new RomManager();
+        roms.getRoms();
         clearInterval(transitionTimer);
         handlers.layer.send('readMods', mods);
+        handlers.layer.send('readRoms', roms);
         if (
           !fs.existsSync(path.join('./ModLoader', 'ModLoader64-config.json'))
         ) {
@@ -174,6 +179,8 @@ const createMainWindow = async () => {
           handlers.layer.send('onConfigLoaded', config);
         }
       }
+      loadingWindow.close();
+      win.show();
     }, 1000);
   });
 

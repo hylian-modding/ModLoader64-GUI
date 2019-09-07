@@ -12,18 +12,8 @@ export class Mod {
   }
 }
 
-export class Patch {
-  file: string;
-  meta?: any;
-
-  constructor(file: string) {
-    this.file = file;
-  }
-}
-
 export class ModManager {
   mods: Mod[] = new Array<Mod>();
-  patches: Patch[] = new Array<Patch>();
 
   scanMods() {
     let paks: Pak[] = new Array<Pak>();
@@ -34,9 +24,16 @@ export class ModManager {
           let modPak: Pak = new Pak(path.join('./ModLoader/mods', parse.base));
           paks.push(modPak);
         } else if (parse.ext === '.bps') {
-          let patch = new Patch(path.join('./ModLoader/mods', parse.base));
-          patch.meta = { name: parse.name, version: '???' };
-          this.patches.push(patch);
+          let patch = new Mod(path.join('./ModLoader/mods', parse.base));
+          let icon = '';
+          if (fs.existsSync('./flips.png')) {
+            icon = fs.readFileSync('./flips.png').toString('base64');
+          } else {
+            icon = fs.readFileSync('./resources/flips.png').toString('base64');
+          }
+          patch.meta = { name: parse.name, version: '' };
+          patch.icon = icon;
+          this.mods.push(patch);
         }
       });
     }

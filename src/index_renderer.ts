@@ -1,8 +1,9 @@
 import { MessageLayer } from './MessageLayer';
 import { ipcRenderer } from 'electron';
 import { TunnelMessageHandler } from './GUITunnel';
-import { ModManager, Mod, Patch } from './ModManager';
+import { ModManager, Mod } from './ModManager';
 import { GUIValues } from './GUIValues';
+import { RomManager, Rom } from './RomManager';
 
 class GeneralFormHandler {
   get nickname(): string {
@@ -56,6 +57,100 @@ class GeneralFormHandler {
 
 const formHandler: GeneralFormHandler = new GeneralFormHandler();
 
+function injectItemElement(
+  parentName: string,
+  name: string,
+  _icon: string,
+  version: string,
+  elemBaseName?: string
+) {
+  let parent = document.getElementById(parentName);
+  if (parent !== null && parent !== undefined) {
+    let entry = document.createElement('div');
+    let chk = document.createElement('input');
+    if (elemBaseName !== null && elemBaseName !== undefined) {
+      chk.id = elemBaseName;
+    } else {
+      chk.id = name;
+    }
+    entry.appendChild(chk);
+    let icon = document.createElement('img');
+    icon.src = 'data:image/png;base64, ' + _icon;
+    icon.width = 30;
+    icon.height = 30;
+    entry.appendChild(icon);
+    let text = document.createElement('span');
+    text.textContent = ' ' + name + ' ' + version;
+    entry.appendChild(text);
+    parent.appendChild(entry);
+    if (elemBaseName !== null && elemBaseName !== undefined) {
+      //@ts-ignore
+      $('#' + elemBaseName).checkbox({
+        checked: true,
+      });
+    } else {
+      //@ts-ignore
+      $('#' + name).checkbox({
+        checked: true,
+      });
+    }
+  }
+}
+
+let SELECTED_ROM = '';
+
+function injectItemElement_RadioButton(
+  parentName: string,
+  name: string,
+  _icon: string,
+  version: string,
+  elemBaseName?: string
+) {
+  let parent = document.getElementById(parentName);
+  if (parent !== null && parent !== undefined) {
+    let entry = document.createElement('div');
+    let chk = document.createElement('input');
+    if (elemBaseName !== null && elemBaseName !== undefined) {
+      chk.setAttribute('data-id', elemBaseName);
+      chk.id = elemBaseName;
+    } else {
+      chk.setAttribute('data-id', name);
+      chk.id = name;
+    }
+    chk.name = 'selectedRom';
+    entry.appendChild(chk);
+    /* let icon = document.createElement('img');
+		icon.src = 'data:image/png;base64, ' + _icon;
+		icon.width = 30;
+		icon.height = 30;
+		entry.appendChild(icon); */
+    let text = document.createElement('span');
+    if (elemBaseName !== null && elemBaseName !== undefined) {
+      text.id = elemBaseName + '_span';
+    } else {
+      text.id = name + '_span';
+    }
+    text.textContent = ' ' + name + ' ' + version;
+    entry.appendChild(text);
+    parent.appendChild(entry);
+    let jq;
+    if (elemBaseName !== null && elemBaseName !== undefined) {
+      jq = $('#' + elemBaseName);
+    } else {
+      jq = $('#' + name);
+    }
+    //@ts-ignore
+    jq.radiobutton({
+      checked: false,
+      onChange: (checked: boolean) => {
+        if (checked) {
+          SELECTED_ROM = name;
+        }
+      },
+    });
+  }
+}
+
 class WebSideMessageHandlers {
   layer: MessageLayer;
 
@@ -74,48 +169,19 @@ class WebSideMessageHandlers {
   @TunnelMessageHandler('readMods')
   onMods(mods: ModManager) {
     mods.mods.forEach((mod: Mod) => {
-      let parent = document.getElementById('mods');
-      if (parent !== null && parent !== undefined) {
-        let entry = document.createElement('div');
-        let chk = document.createElement('input');
-        chk.id = mod.meta.name;
-        entry.appendChild(chk);
-        let icon = document.createElement('img');
-        icon.src = 'data:image/png;base64, ' + mod.icon;
-        icon.width = 30;
-        icon.height = 30;
-        entry.appendChild(icon);
-        let text = document.createElement('span');
-        text.textContent = mod.meta.name + ' ' + mod.meta.version;
-        entry.appendChild(text);
-        parent.appendChild(entry);
-        //@ts-ignore
-        $('#' + mod.meta.name).checkbox({
-          checked: true,
-        });
-      }
+      injectItemElement(
+        'mods',
+        mod.meta.name,
+        mod.icon as string,
+        mod.meta.version
+      );
     });
-    mods.patches.forEach((patch: Patch) => {
-      let parent = document.getElementById('mods');
-      if (parent !== null && parent !== undefined) {
-        let entry = document.createElement('div');
-        let chk = document.createElement('input');
-        chk.id = patch.meta.name;
-        entry.appendChild(chk);
-        let icon = document.createElement('img');
-        icon.src = './flips.png';
-        icon.width = 30;
-        icon.height = 30;
-        entry.appendChild(icon);
-        let text = document.createElement('span');
-        text.textContent = patch.meta.name;
-        entry.appendChild(text);
-        parent.appendChild(entry);
-        //@ts-ignore
-        $('#' + patch.meta.name).checkbox({
-          checked: true,
-        });
-      }
+  }
+
+  @TunnelMessageHandler('readRoms')
+  onRoms(roms: RomManager) {
+    roms.roms.forEach((rom: Rom) => {
+      injectItemElement_RadioButton('_roms', rom.filename, '', '', rom.hash);
     });
   }
 
@@ -138,12 +204,14 @@ document.addEventListener('DOMContentLoaded', () => {
 let startButton = document.getElementById('start');
 if (startButton !== null) {
   startButton.addEventListener('click', () => {
+    let radioButtons = document.getElementsByName('selectedRom');
     handlers.layer.send(
       'onStartButtonPressed',
       new GUIValues(
         formHandler.nickname,
         formHandler.lobby,
-        formHandler.password
+        formHandler.password,
+        SELECTED_ROM
       )
     );
   });
