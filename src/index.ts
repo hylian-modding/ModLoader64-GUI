@@ -57,6 +57,12 @@ class NodeSideMessageHandlers {
     config['NetworkEngine.Client'].password = values.password;
     config['ModLoader64'].isServer = true;
     config['ModLoader64'].rom = values.rom;
+    fs.readdirSync('./ModLoader/mods').forEach((file: string) => {
+      let parse = path.parse(file);
+      if (parse.ext === '.bps') {
+        config['ModLoader64'].patch = parse.base;
+      }
+    });
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     startModLoader();
   }
