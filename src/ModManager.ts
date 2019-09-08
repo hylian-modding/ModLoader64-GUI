@@ -41,6 +41,9 @@ export class ModManager {
     if (m === null || m === undefined) {
       return;
     }
+    if (!fs.existsSync(m.file) || m.file === '') {
+      return;
+    }
     if (mod.enabled) {
       if (m.file.indexOf('.disabled') > -1) {
         fs.renameSync(m.file, m.file.replace('.disabled', ''));

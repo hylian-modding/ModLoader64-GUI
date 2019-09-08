@@ -36,31 +36,6 @@ request(
           }
         );
       }
-      // Check plugins.
-      if (fs.existsSync('./ModLoader/mods')) {
-        fs.readdirSync('./ModLoader/mods').forEach((file: string) => {
-          let parse = path.parse(file);
-          if (parse.ext === '.pak') {
-            console.log('Found .pak file: ' + parse.base + '.');
-            let modPak: Pak = new Pak(
-              path.join('./ModLoader/mods', parse.base)
-            );
-            for (let i = 0; i < modPak.pak.header.files.length; i++) {
-              if (
-                modPak.pak.header.files[i].filename.indexOf('package.json') > -1
-              ) {
-                let meta: any = JSON.parse(modPak.load(i).toString());
-                if (meta.hasOwnProperty('updateUrl')) {
-                  // Do things.
-                } else {
-                  console.log('No update entry found.');
-                }
-                break;
-              }
-            }
-          }
-        });
-      }
     } else {
       console.log(
         'Got an error: ',

@@ -1,0 +1,14 @@
+{
+	"name": "modloader64-gui",
+	"productName": "modloader64 gui",
+	"version": "0.0.0",
+	"description": "My remarkable app",
+	"license": "GPL",
+	"repository": "hylianmodding/modloader64-gui",
+	"author": {
+		"name": "denoflions",
+		"email": "denvstheworld@gmail.com",
+		"url": "http://hylianmodding.com"
+	},
+	"scripts": {}
+}

@@ -57,7 +57,7 @@ class GeneralFormHandler {
 
 const formHandler: GeneralFormHandler = new GeneralFormHandler();
 
-function injectItemElement(mod: Mod) {
+function injectItemElement_ModsTab(mod: Mod) {
   let parent = document.getElementById('mods');
   if (parent !== null && parent !== undefined) {
     let entry = document.createElement('div');
@@ -93,7 +93,7 @@ function injectItemElement(mod: Mod) {
 
 let SELECTED_ROM = '';
 
-function injectItemElement_RadioButton(
+function injectItemElement_RomsTab(
   parentName: string,
   name: string,
   _icon: string,
@@ -163,14 +163,14 @@ class WebSideMessageHandlers {
   @TunnelMessageHandler('readMods')
   onMods(mods: ModManager) {
     mods.mods.forEach((mod: Mod) => {
-      injectItemElement(mod);
+      injectItemElement_ModsTab(mod);
     });
   }
 
   @TunnelMessageHandler('readRoms')
   onRoms(roms: RomManager) {
     roms.roms.forEach((rom: Rom) => {
-      injectItemElement_RadioButton('_roms', rom.filename, '', '', rom.hash);
+      injectItemElement_RomsTab('_roms', rom.filename, '', '', rom.hash);
     });
   }
 
@@ -193,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
 let startButton = document.getElementById('start');
 if (startButton !== null) {
   startButton.addEventListener('click', () => {
-    let radioButtons = document.getElementsByName('selectedRom');
     handlers.layer.send(
       'onStartButtonPressed',
       new GUIValues(

@@ -1,7 +1,6 @@
 'use strict';
 import path from 'path';
 import { app, BrowserWindow, Menu, ipcMain } from 'electron';
-/// const {autoUpdater} = require('electron-updater');
 import { is } from 'electron-util';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
@@ -14,6 +13,7 @@ import { ModManager, ModStatus } from './ModManager';
 import fs from 'fs';
 import { GUIValues } from './GUIValues';
 import { RomManager } from './RomManager';
+import { GUIUpdater } from './updateGUI';
 
 require('source-map-support').install();
 
@@ -23,17 +23,6 @@ unhandled();
 
 // Note: Must match `build.appId` in package.json
 app.setAppUserModelId('com.hylianmodding.modloader64-gui');
-
-// Uncomment this before publishing your first version.
-// It's commented out as it throws an error if there are no published versions.
-// if (!is.development) {
-// 	const FOUR_HOURS = 1000 * 60 * 60 * 4;
-// 	setInterval(() => {
-// 		autoUpdater.checkForUpdates();
-// 	}, FOUR_HOURS);
-//
-// 	autoUpdater.checkForUpdates();
-// }
 
 // Prevent window from being garbage collected
 let status: string;
@@ -94,13 +83,21 @@ const createLoadingWindow = async () => {
 
   win.on('ready-to-show', () => {
     win.show();
-    updateProcess = fork(__dirname + '/unpakUpdate.js');
+    updateProcess = fork(__dirname + '/updateModLoader.js');
     updateProcess.on('exit', (code: number, signal: string) => {
       if (code === 1852400485) {
         app.relaunch();
         app.exit();
+      } else {
+        updateProcess = fork(__dirname + '/updatePlugins.js');
+        updateProcess.on('exit', (code: number, signal: string) => {
+          updateProcess = null;
+          setTimeout(() => {
+            let guiu: GUIUpdater = new GUIUpdater();
+            guiu.doCheck();
+          }, 10000);
+        });
       }
-      updateProcess = null;
     });
   });
 
@@ -183,9 +180,9 @@ const createMainWindow = async () => {
           );
           handlers.layer.send('onConfigLoaded', config);
         }
+        loadingWindow.close();
+        win.show();
       }
-      loadingWindow.close();
-      win.show();
     }, 1000);
   });
 

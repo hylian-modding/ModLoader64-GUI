@@ -1,5 +1,6 @@
 const copyNodeModules = require('copy-node-modules');
 const exec = require('child_process').execSync;
+const fs = require('fs');
 
 const srcDir = '.';
 const dstDir = './app';
