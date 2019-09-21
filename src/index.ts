@@ -5,7 +5,7 @@ import { is } from 'electron-util';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
 import contextMenu from 'electron-context-menu';
-import { fork, ForkOptions } from 'child_process';
+import { fork, ForkOptions, exec } from 'child_process';
 import menu from './menu';
 import { MessageLayer } from './MessageLayer';
 import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
@@ -75,7 +75,21 @@ class NodeSideMessageHandlers {
   @TunnelMessageHandler('onModStatusChanged')
   onModStatusChanged(mod: ModStatus) {
     mods.changeStatus(mod);
-  }
+	}
+
+	@TunnelMessageHandler('onInputConfig')
+	onInputConfigClick(evt: any){
+		let child = exec(path.resolve('./ModLoader/InputConfigTool.exe'), {
+			cwd: path.resolve('./ModLoader')
+		}, (error: any) => {
+			if (error){
+				console.log(error);
+			}
+		});
+		child.on('exit', (code: number) => {
+			console.log(code);
+		});
+	}
 }
 
 let handlers: NodeSideMessageHandlers;
