@@ -3,8 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import request from 'request';
 const download = require('download-file');
-import { spawn } from 'child_process';
-import { app } from 'electron';
+import { fork } from 'child_process';
 
 export class GUIUpdater {
   doCheck() {
@@ -22,23 +21,29 @@ export class GUIUpdater {
           if (fbResponse.version !== pkg.version) {
             let options = {
               directory: './',
-              filename: 'update.asar.dummy',
+              filename: 'app.pak',
             };
             download(
-              'https://nexus.inpureprojects.info/ModLoader64/launcher/update/app.asar',
+              fbResponse.url,
               options,
               function(err: any) {
                 if (err) throw err;
-                let child = spawn('./node.exe', ['./updater.js'], {
-                  detached: true,
-                });
-                child.unref();
-                app.exit();
+                if (fs.existsSync('./app.pak')) {
+									let pak: Pak = new Pak('./app.pak');
+									pak.extractAll('./resources');
+									fs.unlinkSync('./app.pak');
+									process.exit(1852400485);
+								}
               }
             );
-          }
+          }else{
+						process.exit(0);
+					}
         }
       }
     );
   }
 }
+
+const update: GUIUpdater = new GUIUpdater();
+update.doCheck();

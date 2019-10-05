@@ -1,7 +1,7 @@
 {
 	"name": "modloader64-gui",
 	"productName": "modloader64 gui",
-	"version": "0.0.0",
+	"version": "1.0.0",
 	"description": "My remarkable app",
 	"license": "GPL",
 	"repository": "hylianmodding/modloader64-gui",
@@ -10,5 +10,20 @@
 		"email": "denvstheworld@gmail.com",
 		"url": "http://hylianmodding.com"
 	},
-	"scripts": {}
+	"scripts": {},
+	"dependencies": {
+		"buffer-json": "^2.0.0",
+		"download-file": "^0.1.5",
+		"electron-context-menu": "^0.12.1",
+		"electron-debug": "^3.0.0",
+		"electron-store": "^3.3.0",
+		"electron-unhandled": "^2.2.0",
+		"electron-updater": "^4.0.6",
+		"electron-util": "^0.12.0",
+		"eventemitter2": "^5.0.1",
+		"mkdir-recursive": "^0.4.0",
+		"request": "^2.88.0",
+		"source-map-support": "^0.5.13",
+		"xterm": "^4.0.1"
+	}
 }

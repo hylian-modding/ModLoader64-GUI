@@ -1,7 +1,7 @@
 {
 	"name": "modloader64-gui",
 	"productName": "modloader64 gui",
-	"version": "0.0.0",
+	"version": "1.0.0",
 	"description": "My remarkable app",
 	"license": "GPL",
 	"repository": "hylianmodding/modloader64-gui",
@@ -17,8 +17,8 @@
 		"build": "node ./resources.js && tsc && node ./fix_browser.js",
 		"start": "npm run build && electron ./app",
 		"start_debug": "electron ./app",
-		"pack": "npm run build && electron-builder --dir && node ./modules.js",
-		"dist": "npm run build && electron-builder --windows && node ./modules.js",
+		"pack": "npm run build && electron-builder --dir",
+		"dist": "npm run build && electron-builder --windows && electron-builder --linux && electron-builder --mac",
 		"release": "np",
 		"fix": "gts fix"
 	},
@@ -34,7 +34,8 @@
 		"eventemitter2": "^5.0.1",
 		"mkdir-recursive": "^0.4.0",
 		"request": "^2.88.0",
-		"source-map-support": "^0.5.13"
+		"source-map-support": "^0.5.13",
+		"xterm": "^4.0.1"
 	},
 	"devDependencies": {
 		"@types/jquery": "^3.3.31",
@@ -59,10 +60,20 @@
 		"releaseDraft": false
 	},
 	"build": {
+		"publish": [
+			{
+				"provider": "generic",
+				"url": "https://nexus.inpureprojects.info/ModLoader64/launcher/update/"
+			}
+		],
 		"appId": "com.hylianmodding.modloader64-gui",
 		"mac": {
 			"category": "public.app-category.social-networking",
-			"darkModeSupport": true
+			"asar": false,
+			"darkModeSupport": true,
+			"target": [
+				"zip"
+			]
 		},
 		"directories": {
 			"app": "./app"
@@ -82,10 +93,16 @@
 				}
 			]
 		},
-		"linux": {
+		"win": {
+			"asar": false,
 			"target": [
-				"AppImage",
-				"deb"
+				"zip"
+			]
+		},
+		"linux": {
+			"asar": false,
+			"target": [
+				"tar.gz"
 			],
 			"category": "Network;Chat"
 		}

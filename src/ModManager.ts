@@ -71,10 +71,11 @@ export class ModManager {
         ) {
           let patch = new Mod(path.join('./ModLoader/mods', parse.base));
           let icon = '';
-          if (fs.existsSync('./flips.png')) {
-            icon = fs.readFileSync('./flips.png').toString('base64');
-          } else {
+          if (fs.existsSync('./resources/flips.png')) {
             icon = fs.readFileSync('./resources/flips.png').toString('base64');
+          } else {
+						console.log(path.resolve("./resources/app/flips.png"));
+            icon = fs.readFileSync('./resources/app/flips.png').toString('base64');
           }
           patch.meta = {
             name: file.replace('.bps', '').replace('.disabled', ''),

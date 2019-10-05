@@ -1,9 +1,11 @@
 import { MessageLayer } from './MessageLayer';
 import { ipcRenderer } from 'electron';
-import { TunnelMessageHandler } from './GUITunnel';
+import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
 import { ModManager, Mod, ModStatus } from './ModManager';
 import { GUIValues } from './GUIValues';
 import { RomManager, Rom } from './RomManager';
+
+const hooks = {hooks: {console: function(msg: string){}}};
 
 class GeneralFormHandler {
   get nickname(): string {
@@ -178,8 +180,15 @@ class WebSideMessageHandlers {
   onConfigLoaded(config: any) {
     formHandler.nickname = config['NetworkEngine.Client'].nickname;
     formHandler.lobby = config['NetworkEngine.Client'].lobby;
-    formHandler.password = config['NetworkEngine.Client'].password;
-  }
+		formHandler.password = config['NetworkEngine.Client'].password;
+		console.log(config);
+	}
+
+	@TunnelMessageHandler("onLog")
+	onLog(msg: string){
+		hooks.hooks.console(msg);
+		console.log(msg);
+	}
 }
 
 const handlers = new WebSideMessageHandlers(ipcRenderer, ipcRenderer);
@@ -211,3 +220,5 @@ if (inputConfig !== null){
 		handlers.layer.send('onInputConfig', {});
 	});
 }
+
+module.exports = hooks;

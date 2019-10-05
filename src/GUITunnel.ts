@@ -27,7 +27,7 @@ export function TunnelMessageHandler(key: string) {
     if (target.ModLoader.TunnelMessageHandler.MessageHandlers === undefined) {
       target.ModLoader.TunnelMessageHandler['MessageHandlers'] = new Map<
         string,
-        Function
+        string
       >();
     }
     target.ModLoader.TunnelMessageHandler.MessageHandlers.set(key, propertyKey);

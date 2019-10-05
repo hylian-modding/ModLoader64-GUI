@@ -5,6 +5,8 @@
 	<meta charset="utf-8">
 	<title>modloader64 gui</title>
 	<link rel="stylesheet" href="./index.css">
+	<link rel="stylesheet" href="./xterm/css/xterm.css" />
+    <script src="./xterm/lib/xterm.js"></script>
 </head>
 
 <body>
@@ -22,18 +24,6 @@
 		windowTopBar.style.top = windowTopBar.style.left = 0
 		windowTopBar.style.webkitAppRegion = "drag"
 		document.body.appendChild(windowTopBar);
-
-		window.addEventListener("gamepadconnected", function (evt) {
-			console.log(evt.gamepad);
-			if (evt.gamepad["vibrationActuator"] !== null) {
-				evt.gamepad.vibrationActuator.playEffect("dual-rumble", {
-					startDelay: 0,
-					duration: 1000,
-					weakMagnitude: 1.0,
-					strongMagnitude: 1.0
-				});
-			}
-		});
 	</script>
 </body>
 
