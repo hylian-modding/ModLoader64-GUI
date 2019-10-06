@@ -23,7 +23,10 @@ var loading = [
 	"Spending Jiggies",
 	"Collecting a star",
 	"Locating Mario's hat",
-	"Asking questions without reading the FAQ"
+	"Asking questions without reading the FAQ",
+	"Giving away bombs, but not the bomb bag",
+	"Filling inventory with sticks",
+	"Sending horses to the glue factory"
 ];
 
 function randomShitpost() {
