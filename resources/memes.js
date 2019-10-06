@@ -27,7 +27,8 @@ var loading = [
 	"Giving away bombs, but not the bomb bag",
 	"Filling inventory with sticks",
 	"Sending horses to the glue factory",
-	"Shoutouts to SimpleFlips"
+	"Shoutouts to SimpleFlips",
+	"Wearing gloves while speedrunning"
 ];
 
 function randomShitpost() {
