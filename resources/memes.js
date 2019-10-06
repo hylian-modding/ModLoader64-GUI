@@ -26,7 +26,8 @@ var loading = [
 	"Asking questions without reading the FAQ",
 	"Giving away bombs, but not the bomb bag",
 	"Filling inventory with sticks",
-	"Sending horses to the glue factory"
+	"Sending horses to the glue factory",
+	"Shoutouts to SimpleFlips"
 ];
 
 function randomShitpost() {
