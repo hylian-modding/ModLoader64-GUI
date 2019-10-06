@@ -28,7 +28,12 @@ var loading = [
 	"Filling inventory with sticks",
 	"Sending horses to the glue factory",
 	"Shoutouts to SimpleFlips",
-	"Wearing gloves while speedrunning"
+	"Wearing gloves while speedrunning",
+	"Shouting Guh-huh",
+	"Stealing Mido's belongings",
+	"Crashing the game thanks to Mido",
+	"Hugging Gohma",
+	"Dying by a slowly falling block"
 ];
 
 function randomShitpost() {
