@@ -13,7 +13,6 @@ import { ModManager, ModStatus } from './ModManager';
 import fs from 'fs';
 import { GUIValues } from './GUIValues';
 import { RomManager } from './RomManager';
-import { GUIUpdater } from './updateGUI';
 
 require('source-map-support').install();
 
@@ -48,6 +47,7 @@ class NodeSideMessageHandlers {
 
 	@TunnelMessageHandler('onStartButtonPressed')
 	async onStart(values: GUIValues) {
+		console.log(values);
 		let configPath: string = path.resolve(
 			path.join('./ModLoader', 'ModLoader64-config.json')
 		);
@@ -55,8 +55,10 @@ class NodeSideMessageHandlers {
 		config['NetworkEngine.Client'].nickname = values.nickname;
 		config['NetworkEngine.Client'].lobby = values.lobby;
 		config['NetworkEngine.Client'].password = values.password;
-		config['ModLoader64'].isServer = true;
+		config['ModLoader64'].isServer = false;
 		config['ModLoader64'].rom = values.rom;
+		config['NetworkEngine.Client'].ip = values.server.split(":")[0];
+		config['NetworkEngine.Client'].port = values.server.split(":")[1];
 		let found = false;
 		fs.readdirSync('./ModLoader/mods').forEach((file: string) => {
 			let parse = path.parse(file);
@@ -214,6 +216,7 @@ const createMainWindow = async () => {
 					handlers.layer.send('onConfigLoaded', config);
 				}
 				loadingWindow.close();
+				win.setTitle(app.getName() + " " + app.getVersion() + " | " + "ModLoader64 Version " + require('./ModLoader/src/version'));
 				win.show();
 			}
 		}, 1000);

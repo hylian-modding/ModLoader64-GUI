@@ -6,6 +6,18 @@ import { GUIValues } from './GUIValues';
 import { RomManager, Rom } from './RomManager';
 
 const hooks = {hooks: {console: function(msg: string){}}};
+const servers = require('./servers');
+
+function getSelectedOption(sel: HTMLSelectElement) {
+	var opt;
+	for ( var i = 0, len = sel.options.length; i < len; i++ ) {
+			opt = sel.options[i];
+			if ( opt.selected === true ) {
+					break;
+			}
+	}
+	return opt;
+}
 
 class GeneralFormHandler {
   get nickname(): string {
@@ -54,7 +66,41 @@ class GeneralFormHandler {
     _password.value = pw;
     //@ts-ignore
     $('#password').textbox('setText', pw);
-  }
+	}
+
+	get selectedServer(): string{
+		let _server: HTMLSelectElement = document.getElementById("cc") as HTMLSelectElement;
+		let selected = getSelectedOption(_server) as HTMLOptionElement;
+		let value = selected.text;
+		for (let i = 0; i < servers.length; i++){
+			if (value === servers[i].name){
+				return servers[i].url + ":" + servers[i].port;
+			}
+		}
+		return "";
+	}
+
+	set selectedServer(ip: string){
+		let _server: HTMLSelectElement = document.getElementById("cc") as HTMLSelectElement;
+		for (let i = 0; i < servers.length; i++){
+			if (ip === servers[i].ip){
+				for (let k = 0; k < _server.options.length; k++){
+					if (_server.options[k].text === servers[i].name){
+						_server.selectedIndex = k;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	get selectedRom(): string{
+		return SELECTED_ROM;
+	}
+
+	set selectedRom(rom: string){
+		SELECTED_ROM = rom;
+	}
 }
 
 const formHandler: GeneralFormHandler = new GeneralFormHandler();
@@ -143,7 +189,7 @@ function injectItemElement_RomsTab(
           SELECTED_ROM = name;
         }
       },
-    });
+		});
   }
 }
 
@@ -181,6 +227,8 @@ class WebSideMessageHandlers {
     formHandler.nickname = config['NetworkEngine.Client'].nickname;
     formHandler.lobby = config['NetworkEngine.Client'].lobby;
 		formHandler.password = config['NetworkEngine.Client'].password;
+		formHandler.selectedServer = config['NetworkEngine.Client'].ip;
+		formHandler.selectedRom = config["ModLoader64"].rom;
 		console.log(config);
 	}
 
@@ -208,7 +256,8 @@ if (startButton !== null) {
         formHandler.nickname,
         formHandler.lobby,
         formHandler.password,
-        SELECTED_ROM
+				formHandler.selectedRom,
+				formHandler.selectedServer
       )
     );
   });
