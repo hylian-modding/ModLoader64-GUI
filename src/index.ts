@@ -216,7 +216,7 @@ const createMainWindow = async () => {
 					handlers.layer.send('onConfigLoaded', config);
 				}
 				loadingWindow.close();
-				win.setTitle(app.getName() + " " + app.getVersion() + " | " + "ModLoader64 Version " + require('./ModLoader/src/version'));
+				win.setTitle(app.getName() + " " + app.getVersion() + " | " + "ModLoader64 " + require(path.resolve("./ModLoader/src/version")));
 				win.show();
 			}
 		}, 1000);

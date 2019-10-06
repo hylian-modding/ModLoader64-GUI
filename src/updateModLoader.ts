@@ -29,7 +29,12 @@ request(
 				directory: './',
 				filename: 'ModLoader.pak',
 			};
-			let platformkey = process.platform.trim() + process.env.PROCESSOR_ARCHITECTURE;
+			let platformkey = "";
+			if (process.env.PROCESSOR_ARCHITECTURE === undefined) {
+				platformkey = process.platform.trim() + "x64";
+			} else {
+				platformkey = process.platform.trim() + process.env.PROCESSOR_ARCHITECTURE;
+			}
 			console.log(platformkey);
 			if (version !== fbResponse.version) {
 				fs.writeFileSync('./update.json', JSON.stringify(fbResponse));
