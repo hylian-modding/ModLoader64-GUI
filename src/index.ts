@@ -6,7 +6,6 @@ import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
 import contextMenu from 'electron-context-menu';
 import { fork, ForkOptions, exec } from 'child_process';
-import menu from './menu';
 import { MessageLayer } from './MessageLayer';
 import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
 import { ModManager, ModStatus } from './ModManager';
@@ -217,6 +216,7 @@ const createMainWindow = async () => {
 				}
 				loadingWindow.close();
 				win.setTitle(app.getName() + " " + app.getVersion() + " | " + "ModLoader64 " + require(path.resolve("./ModLoader/src/version")));
+				win.removeMenu();
 				win.show();
 			}
 		}, 1000);
@@ -261,7 +261,7 @@ const API_WINDOWS: Array<MessageLayer> = new Array<MessageLayer>();
 
 (async () => {
 	await app.whenReady();
-	Menu.setApplicationMenu(menu);
+	//Menu.setApplicationMenu(menu);
 	loadingWindow = await createLoadingWindow();
 	mainWindow = await createMainWindow();
 })();
