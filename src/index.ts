@@ -92,7 +92,11 @@ class NodeSideMessageHandlers {
 
 	@TunnelMessageHandler('onInputConfig')
 	onInputConfigClick(evt: any) {
-		let child = exec(path.resolve('./ModLoader/InputConfigTool.exe'), {
+		let p = path.resolve('./ModLoader/InputConfigTool.exe');
+		if (process.platform.trim() !== "win32"){
+			p = p.replace(".exe", "");
+		}
+		let child = exec(p, {
 			cwd: path.resolve('./ModLoader')
 		}, (error: any) => {
 			if (error) {

@@ -1,0 +1,1 @@
+./modloader64-gui --no-sandbox
