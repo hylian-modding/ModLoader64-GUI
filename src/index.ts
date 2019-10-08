@@ -12,6 +12,8 @@ import { ModManager, ModStatus } from './ModManager';
 import fs from 'fs';
 import { GUIValues } from './GUIValues';
 import { RomManager } from './RomManager';
+import request from 'request';
+import crypto from 'crypto';
 
 require('source-map-support').install();
 
@@ -32,6 +34,16 @@ let transitionTimer: any;
 let runningWindow: any;
 let mods: ModManager;
 let roms: RomManager;
+
+class FileHash {
+	file: string;
+	hash: string;
+
+	constructor(file: string, hash: string) {
+		this.file = file;
+		this.hash = hash;
+	}
+}
 
 class NodeSideMessageHandlers {
 	layer: MessageLayer;
@@ -89,6 +101,46 @@ class NodeSideMessageHandlers {
 		});
 		child.on('exit', (code: number) => {
 			console.log(code);
+		});
+	}
+
+	@TunnelMessageHandler('verifyFiles')
+	onVerify(evt: any) {
+		var recursive = require("recursive-readdir");
+		let hashes: Array<FileHash> = [];
+		let mismatch: boolean = false;
+		recursive("./ModLoader", function (err: any, files: Array<string>) {
+			for (let i = 0; i < files.length; i++) {
+				let _path = path.resolve(files[i]);
+				let _parse = path.parse(files[i]);
+				let hash = crypto.createHash('md5').update(fs.readFileSync(_path)).digest('hex');
+				hashes.push(new FileHash(_parse.base, hash));
+			}
+			request(
+				'https://nexus.inpureprojects.info/ModLoader64/update/hashes.json',
+				(error, response, body) => {
+					if (!error && response.statusCode === 200) {
+						const remote_hashes = JSON.parse(body);
+						for (let i = 0; i < remote_hashes.length; i++){
+							for (let j = 0; j < hashes.length; j++){
+								if (remote_hashes[i].file === hashes[i].file){
+									console.log("Checking " + remote_hashes[i].file + ".");
+									console.log(remote_hashes[i].hash + " vs " + hashes[i].hash);
+									if (remote_hashes[i].hash !== hashes[i].hash){
+										console.log("Mismatch!");
+										mismatch = true;
+									}
+									break;
+								}
+							}
+						}
+						if (mismatch){
+							handlers.layer.send("hashMismatch", {});
+						}else{
+							handlers.layer.send("hashMatch", {});
+						}
+					}
+				});
 		});
 	}
 

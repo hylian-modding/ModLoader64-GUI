@@ -237,6 +237,16 @@ class WebSideMessageHandlers {
 		hooks.hooks.console(msg);
 		console.log(msg);
 	}
+
+	@TunnelMessageHandler("hashMismatch")
+	onMismatch(evt: any){
+		alert("File mismatch found.");
+	}
+
+	@TunnelMessageHandler("hashMatch")
+	onMatch(evt: any){
+		alert("No anomalies found.");
+	}
 }
 
 const handlers = new WebSideMessageHandlers(ipcRenderer, ipcRenderer);
@@ -267,6 +277,13 @@ let inputConfig = document.getElementById('input-config');
 if (inputConfig !== null){
 	inputConfig.addEventListener('click', () => {
 		handlers.layer.send('onInputConfig', {});
+	});
+}
+
+let verify = document.getElementById('verify-files');
+if (verify !== null){
+	verify.addEventListener('click', ()=>{
+		handlers.layer.send("verifyFiles", {});
 	});
 }
 
