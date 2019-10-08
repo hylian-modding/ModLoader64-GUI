@@ -93,7 +93,7 @@ class NodeSideMessageHandlers {
 	}
 
 	@TunnelMessageHandler("forwardToML")
-	onForwardToML(evt: any){
+	onForwardToML(evt: any) {
 		ModLoader64.send(JSON.stringify(new GUITunnelPacket("forwardToML", evt.id, evt)));
 	}
 }
@@ -313,10 +313,12 @@ async function startModLoader() {
 		} else if (evt.id === 'modloader64_api') {
 			apiHandler(evt);
 		} else {
-			console.log(evt);
 			handlers.layer.send(evt.event as string, evt.data[0]);
 			for (let i = 0; i < API_WINDOWS.length; i++) {
-				API_WINDOWS[i].send(evt.event as string, evt.data[0]);
+				try {
+					API_WINDOWS[i].send(evt.event as string, evt.data[0]);
+				} catch (err) {
+				}
 			}
 		}
 	});
