@@ -154,7 +154,17 @@ class NodeSideMessageHandlers {
 	}
 }
 
+class RunningWindowHandlers {
+	layer: MessageLayer;
+
+	constructor(emitter: any, retriever: any) {
+		this.layer = new MessageLayer('internal_event_bus', emitter, retriever);
+		this.layer.setupMessageProcessor(this);
+	}
+}
+
 let handlers: NodeSideMessageHandlers;
+let running_handlers: RunningWindowHandlers;
 
 const createLoadingWindow = async () => {
 	const win = new BrowserWindow({
@@ -220,6 +230,8 @@ const createRunningWindow = async () => {
 	await win.loadFile(path.join(__dirname, 'running.html'));
 
 	win.setPosition(mainWindow.getPosition()[0], mainWindow.getPosition()[1]);
+
+	running_handlers = new RunningWindowHandlers(win.webContents, ipcMain);
 
 	return win;
 };
@@ -390,7 +402,12 @@ async function startModLoader() {
 			ModLoader64 = null;
 		} catch (err) { }
 	});
-	ModLoader64.on('data', (msg: string) => {
-		handlers.layer.send("onLog", msg);
+	ModLoader64.stdout.on('data', (buf: Buffer) => {
+		let msg: string = buf.toString();
+		if (msg === "" || msg === null || msg === undefined){
+			return;
+		}
+		running_handlers.layer.send("onLog", msg);
+		console.log(msg);
 	});
 }

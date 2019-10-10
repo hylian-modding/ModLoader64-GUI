@@ -24,6 +24,7 @@
 	},
 	"dependencies": {
 		"@types/fs-extra": "^8.0.0",
+		"ansi-to-html": "^0.6.11",
 		"buffer-json": "^2.0.0",
 		"download-file": "^0.1.5",
 		"electron-context-menu": "^0.12.1",
@@ -37,8 +38,7 @@
 		"mkdir-recursive": "^0.4.0",
 		"recursive-readdir": "^2.2.2",
 		"request": "^2.88.0",
-		"source-map-support": "^0.5.13",
-		"xterm": "^4.0.1"
+		"source-map-support": "^0.5.13"
 	},
 	"devDependencies": {
 		"@types/jquery": "^3.3.31",

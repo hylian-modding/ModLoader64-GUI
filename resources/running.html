@@ -6,16 +6,25 @@
 	<title>modloader64 gui</title>
 	<link rel="stylesheet" href="./index.css">
 	<link rel="stylesheet" href="./xterm/css/xterm.css" />
-    <script src="./xterm/lib/xterm.js"></script>
+	<style>
+		#log-container {
+			overflow: auto;
+			height: 150px;
+			width: 550px;
+			background: black;
+		}
+	</style>
 </head>
 
 <body>
 	<p>
 		<img src="./ml64.png" width="10%" height="10%" />
-		<span style="font-family: Nintend; font-size: 27pt; color: #0124a6">ModLoader</span><span
-			style="font-size: 27pt; color: #ff2d1e">64</span>
+		<span style="font-family: Nintend; font-size: 27pt; color: #0124a6">ModLoader</span>
+		<span style="font-size: 27pt; color: #ff2d1e">64</span>
 	</p>
 	<span id="status">Game running.</span>
+	<div id="log-container">
+	</div>
 	<script>
 		var windowTopBar = document.createElement('div')
 		windowTopBar.style.width = "100%"
@@ -24,6 +33,9 @@
 		windowTopBar.style.top = windowTopBar.style.left = 0
 		windowTopBar.style.webkitAppRegion = "drag"
 		document.body.appendChild(windowTopBar);
+	</script>
+	<script>
+		var hooks = require('./running_renderer.js');
 	</script>
 </body>
 
