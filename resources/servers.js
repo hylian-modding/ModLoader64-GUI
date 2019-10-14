@@ -5,6 +5,8 @@ function createServerEntry(name, url, port){
 }
 
 createServerEntry("Official Ooto Server", "192.99.70.23", "8000");
-createServerEntry("BKO Test Server", "97.104.26.220", "8082");
+createServerEntry("Official BKO Server", "192.99.70.23", "8010");
+createServerEntry("Official BKT Server", "192.99.70.23", "8015");
+createServerEntry("Official SM64O Server", "192.99.70.23", "8020");
 
 module.exports = servers;
