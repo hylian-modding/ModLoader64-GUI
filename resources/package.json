@@ -1,7 +1,7 @@
 {
 	"name": "modloader64-gui",
 	"productName": "modloader64 gui",
-	"version": "1.0.5",
+	"version": "1.0.7",
 	"description": "My remarkable app",
 	"license": "GPL",
 	"repository": "hylianmodding/modloader64-gui",
