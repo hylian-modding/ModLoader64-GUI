@@ -23,22 +23,18 @@ export class GUIUpdater {
               directory: './',
               filename: 'app.pak',
             };
-            download(
-              fbResponse.url,
-              options,
-              function(err: any) {
-                if (err) throw err;
-                if (fs.existsSync('./app.pak')) {
-									let pak: Pak = new Pak('./app.pak');
-									pak.extractAll('./resources');
-									fs.unlinkSync('./app.pak');
-									process.exit(1852400485);
-								}
+            download(fbResponse.url, options, function(err: any) {
+              if (err) throw err;
+              if (fs.existsSync('./app.pak')) {
+                let pak: Pak = new Pak('./app.pak');
+                pak.extractAll('./resources');
+                fs.unlinkSync('./app.pak');
+                process.exit(1852400485);
               }
-            );
-          }else{
-						process.exit(0);
-					}
+            });
+          } else {
+            process.exit(0);
+          }
         }
       }
     );

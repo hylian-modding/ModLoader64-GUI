@@ -5,18 +5,18 @@ import { ModManager, Mod, ModStatus } from './ModManager';
 import { GUIValues } from './GUIValues';
 import { RomManager, Rom } from './RomManager';
 
-const hooks = {hooks: {console: function(msg: string){}}};
+const hooks = { hooks: { console(msg: string) {} } };
 const servers = require('./servers');
 
 function getSelectedOption(sel: HTMLSelectElement) {
-	var opt;
-	for ( var i = 0, len = sel.options.length; i < len; i++ ) {
-			opt = sel.options[i];
-			if ( opt.selected === true ) {
-					break;
-			}
-	}
-	return opt;
+  let opt;
+  for (let i = 0, len = sel.options.length; i < len; i++) {
+    opt = sel.options[i];
+    if (opt.selected === true) {
+      break;
+    }
+  }
+  return opt;
 }
 
 class GeneralFormHandler {
@@ -66,41 +66,45 @@ class GeneralFormHandler {
     _password.value = pw;
     //@ts-ignore
     $('#password').textbox('setText', pw);
-	}
+  }
 
-	get selectedServer(): string{
-		let _server: HTMLSelectElement = document.getElementById("cc") as HTMLSelectElement;
-		let selected = getSelectedOption(_server) as HTMLOptionElement;
-		let value = selected.text;
-		for (let i = 0; i < servers.length; i++){
-			if (value === servers[i].name){
-				return servers[i].url + ":" + servers[i].port;
-			}
-		}
-		return "";
-	}
+  get selectedServer(): string {
+    let _server: HTMLSelectElement = document.getElementById(
+      'cc'
+    ) as HTMLSelectElement;
+    let selected = getSelectedOption(_server) as HTMLOptionElement;
+    let value = selected.text;
+    for (let i = 0; i < servers.length; i++) {
+      if (value === servers[i].name) {
+        return servers[i].url + ':' + servers[i].port;
+      }
+    }
+    return '';
+  }
 
-	set selectedServer(ip: string){
-		let _server: HTMLSelectElement = document.getElementById("cc") as HTMLSelectElement;
-		for (let i = 0; i < servers.length; i++){
-			if (ip === servers[i].ip){
-				for (let k = 0; k < _server.options.length; k++){
-					if (_server.options[k].text === servers[i].name){
-						_server.selectedIndex = k;
-						break;
-					}
-				}
-			}
-		}
-	}
+  set selectedServer(ip: string) {
+    let _server: HTMLSelectElement = document.getElementById(
+      'cc'
+    ) as HTMLSelectElement;
+    for (let i = 0; i < servers.length; i++) {
+      if (ip === servers[i].ip) {
+        for (let k = 0; k < _server.options.length; k++) {
+          if (_server.options[k].text === servers[i].name) {
+            _server.selectedIndex = k;
+            break;
+          }
+        }
+      }
+    }
+  }
 
-	get selectedRom(): string{
-		return SELECTED_ROM;
-	}
+  get selectedRom(): string {
+    return SELECTED_ROM;
+  }
 
-	set selectedRom(rom: string){
-		SELECTED_ROM = rom;
-	}
+  set selectedRom(rom: string) {
+    SELECTED_ROM = rom;
+  }
 }
 
 const formHandler: GeneralFormHandler = new GeneralFormHandler();
@@ -189,7 +193,7 @@ function injectItemElement_RomsTab(
           SELECTED_ROM = name;
         }
       },
-		});
+    });
   }
 }
 
@@ -226,27 +230,27 @@ class WebSideMessageHandlers {
   onConfigLoaded(config: any) {
     formHandler.nickname = config['NetworkEngine.Client'].nickname;
     formHandler.lobby = config['NetworkEngine.Client'].lobby;
-		formHandler.password = config['NetworkEngine.Client'].password;
-		formHandler.selectedServer = config['NetworkEngine.Client'].ip;
-		formHandler.selectedRom = config["ModLoader64"].rom;
-		console.log(config);
-	}
+    formHandler.password = config['NetworkEngine.Client'].password;
+    formHandler.selectedServer = config['NetworkEngine.Client'].ip;
+    formHandler.selectedRom = config['ModLoader64'].rom;
+    console.log(config);
+  }
 
-	@TunnelMessageHandler("onLog")
-	onLog(msg: string){
-		hooks.hooks.console(msg);
-		console.log(msg);
-	}
+  @TunnelMessageHandler('onLog')
+  onLog(msg: string) {
+    hooks.hooks.console(msg);
+    console.log(msg);
+  }
 
-	@TunnelMessageHandler("hashMismatch")
-	onMismatch(evt: any){
-		alert("File mismatch found.");
-	}
+  @TunnelMessageHandler('hashMismatch')
+  onMismatch(evt: any) {
+    alert('File mismatch found.');
+  }
 
-	@TunnelMessageHandler("hashMatch")
-	onMatch(evt: any){
-		alert("No anomalies found.");
-	}
+  @TunnelMessageHandler('hashMatch')
+  onMatch(evt: any) {
+    alert('No anomalies found.');
+  }
 }
 
 const handlers = new WebSideMessageHandlers(ipcRenderer, ipcRenderer);
@@ -266,25 +270,25 @@ if (startButton !== null) {
         formHandler.nickname,
         formHandler.lobby,
         formHandler.password,
-				formHandler.selectedRom,
-				formHandler.selectedServer
+        formHandler.selectedRom,
+        formHandler.selectedServer
       )
     );
   });
 }
 
 let inputConfig = document.getElementById('input-config');
-if (inputConfig !== null){
-	inputConfig.addEventListener('click', () => {
-		handlers.layer.send('onInputConfig', {});
-	});
+if (inputConfig !== null) {
+  inputConfig.addEventListener('click', () => {
+    handlers.layer.send('onInputConfig', {});
+  });
 }
 
 let verify = document.getElementById('verify-files');
-if (verify !== null){
-	verify.addEventListener('click', ()=>{
-		handlers.layer.send("verifyFiles", {});
-	});
+if (verify !== null) {
+  verify.addEventListener('click', () => {
+    handlers.layer.send('verifyFiles', {});
+  });
 }
 
 module.exports = hooks;

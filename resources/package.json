@@ -26,6 +26,7 @@
 		"source-map-support": "^0.5.13",
 		"fs-extra": "^8.1.0",
 		"recursive-readdir": "^2.2.2",
-		"ansi-to-html": "^0.6.11"
+		"ansi-to-html": "^0.6.11",
+		"discord-rpc": "^3.1.0"
 	}
 }

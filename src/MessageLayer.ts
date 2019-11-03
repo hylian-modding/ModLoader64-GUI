@@ -30,7 +30,7 @@ export class MessageLayer {
   }
 
   setupMessageProcessor(instance: any) {
-		let p = Object.getPrototypeOf(instance);
+    let p = Object.getPrototypeOf(instance);
     if (p.hasOwnProperty('ModLoader')) {
       if (p.ModLoader.hasOwnProperty('TunnelMessageHandler')) {
         if (
