@@ -33,7 +33,23 @@ var loading = [
 	"Stealing Mido's belongings",
 	"Crashing the game thanks to Mido",
 	"Hugging Gohma",
-	"Dying by a slowly falling block"
+	"Dying by a slowly falling block",
+	"Bringing back faphand",
+	"Adding PvP to OOT",
+	"Replicating damage to myself endlessly",
+	"Having the highest MMR in OOT Rando",
+	"Lurking in dev VC but not working on Modloader",
+	"Adding Quake physics",
+	"Grog punch goblin",
+	"Slaying enemies with ball bearings",
+	"Torching the manor",
+	"\"It works on my system\"",
+	"Getting the source code",
+	"Releasing Modloader before 2030",
+	"Making models but not releasing them",
+	"Online support for Wrestlemania 2000 when",
+	"Getting SRM from bomb replication",
+	"Wasting memory"
 ];
 
 function randomShitpost() {
