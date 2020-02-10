@@ -1,3 +1,5 @@
+let d = 0;
+let icache: Array<number> = [];
 var loading = [
 	"Making Zelda a girl",
 	"Unlocking green Mario",
@@ -51,17 +53,27 @@ var loading = [
 	"Getting SRM from bomb replication",
 	"Wasting memory",
 	"Crashing because someone walked into your scene",
-	"Punching things to tame them"
+	"Punching things to tame them",
+	"Breeding dinos instead of coding"
 ];
 
 function randomShitpost() {
-	var item = loading[Math.floor(Math.random() * loading.length)];
+	var thisRand = Math.floor(Math.random() * loading.length);
+	var found = false;
+	while (found) {
+		thisRand = Math.floor(Math.random() * loading.length);
+		icache.forEach(function(v) {
+			if (v == thisRand) found = true;
+		});
+	}
+	
+	icache.push(thisRand)
+	
+	var item = loading[];
 	document.getElementById("meme").textContent = item;
 }
 
 randomShitpost();
-
-let d = 0;
 
 setInterval(() => {
 	let dots = "";
