@@ -61,13 +61,14 @@ function randomShitpost() {
 	var thisRand = Math.floor(Math.random() * loading.length);
 	var found = false;
 	while (found) {
+		found = false;
 		thisRand = Math.floor(Math.random() * loading.length);
 		icache.forEach(function(v) {
 			if (v == thisRand) found = true;
 		});
 	}
 	
-	icache.push(thisRand)
+	icache.push(thisRand);
 	
 	var item = loading[thisRand];
 	document.getElementById("meme").textContent = item;
