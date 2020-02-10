@@ -1,5 +1,5 @@
 let d = 0;
-let icache: Array<number> = [];
+let icache = [];
 var loading = [
 	"Making Zelda a girl",
 	"Unlocking green Mario",
