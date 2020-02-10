@@ -58,17 +58,18 @@ var loading = [
 ];
 
 function randomShitpost() {
-	var thisRand = Math.floor(Math.random() * loading.length);
-	var found = false;
-	while (found) {
-		found = false;
-		thisRand = Math.floor(Math.random() * loading.length);
-		icache.forEach(function(v) {
-			if (v == thisRand) found = true;
-		});
+	var thisRand;
+	var free = [];
+	let i = 0;
+	for (i = 0; i < loading.length; i++) {
+		if (!icache[i]) {
+			free.push(i);
+		}
 	}
-	
-	icache.push(thisRand);
+
+	thisRand = free[Math.floor(Math.random() * free.length)];
+
+	icache[thisRand] = true;
 	
 	var item = loading[thisRand];
 	document.getElementById("meme").textContent = item;
@@ -87,4 +88,4 @@ setInterval(() => {
 	}
 	d++;
 	document.getElementById("dots").textContent = dots;
-}, 500);
+}, 400);
