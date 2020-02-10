@@ -50,7 +50,8 @@ var loading = [
 	"Online support for Wrestlemania 2000 when",
 	"Getting SRM from bomb replication",
 	"Wasting memory",
-	"Crashing because someone walked into your scene"
+	"Crashing because someone walked into your scene",
+	"Punching things to tame them"
 ];
 
 function randomShitpost() {
