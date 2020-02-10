@@ -69,7 +69,7 @@ function randomShitpost() {
 	
 	icache.push(thisRand)
 	
-	var item = loading[];
+	var item = loading[thisRand];
 	document.getElementById("meme").textContent = item;
 }
 
