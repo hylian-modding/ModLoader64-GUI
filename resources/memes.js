@@ -49,7 +49,9 @@ var loading = [
 	"Making models but not releasing them",
 	"Online support for Wrestlemania 2000 when",
 	"Getting SRM from bomb replication",
-	"Wasting memory"
+	"Wasting memory",
+	"Crashing because someone walked into your scene",
+	"Punching things to tame them"
 ];
 
 function randomShitpost() {
