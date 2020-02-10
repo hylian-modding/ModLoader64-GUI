@@ -53,6 +53,7 @@ export class DiscordIntegration {
 
 	private rpc: DiscordRPC.Client;
 	private presence: DiscordPresence;
+	private ready = false;
 
 	constructor() {
 		// only needed for discord allowing spectate, join, ask to join
@@ -69,12 +70,16 @@ export class DiscordIntegration {
 
 		this.rpc.on('ready', () => {
 			this.rpc.setActivity(this.presence);
+			this.ready = true;
 		});
 
 		this.rpc.login({ clientId }).catch(console.error);
 	}
 
 	reset() {
+		if (!this.ready){
+			return;
+		}
 		this.presence = new DiscordPresence();
 		this.presence.details = "On the launcher";
 		this.presence.state = "Looking at settings";
@@ -86,6 +91,9 @@ export class DiscordIntegration {
 	}
 
 	setActivity(p: any) {
+		if (!this.ready){
+			return;
+		}
 		this.presence.instance = true;
 		this.presence.details = p.details;
 		this.presence.state = p.state;

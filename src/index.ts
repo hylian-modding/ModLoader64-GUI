@@ -264,6 +264,7 @@ const createMainWindow = async () => {
   win.on('ready-to-show', () => {
     transitionTimer = setInterval(() => {
       if (loadingWindow && updateProcess == null) {
+        discord = new DiscordIntegration();
         mods = new ModManager();
         mods.scanMods();
         roms = new RomManager();
@@ -307,9 +308,6 @@ const createMainWindow = async () => {
         );
         win.removeMenu();
         win.show();
-        setImmediate(() => {
-          discord = new DiscordIntegration();
-        });
       }
     }, 1000);
   });
@@ -358,6 +356,7 @@ function apiHandler(evt: GUITunnelPacket) {
       });
 
       win.on('ready-to-show', () => {
+        win.removeMenu();
         win.show();
         win.setParentWindow(runningWindow);
       });

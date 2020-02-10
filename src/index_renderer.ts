@@ -117,7 +117,7 @@ function injectItemElement_ModsTab(mod: Mod) {
     chk.id = mod.meta.name;
     entry.appendChild(chk);
     let icon = document.createElement('img');
-    icon.src = 'data:image/png;base64, ' + mod.icon;
+    icon.src = 'data:image/' + mod.type + ';base64, ' + mod.icon;
     icon.width = 30;
     icon.height = 30;
     entry.appendChild(icon);
