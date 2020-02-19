@@ -5,3 +5,4 @@ app/
 .vs/
 ModLoader/
 update.json
+cache/

@@ -4,12 +4,11 @@
   "version": "1.0.0",
   "description": "My remarkable app",
   "license": "GPL",
-  "repository": "hylianmodding/modloader64-gui",
-  "author": {
-    "name": "denoflions",
-    "email": "denvstheworld@gmail.com",
-    "url": "http://hylianmodding.com"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hylianmodding/modloader64-gui.git"
   },
+  "author": "denoflions <denvstheworld@gmail.com> (http://hylianmodding.com)",
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
     "lint": "xo",
@@ -24,35 +23,36 @@
   },
   "dependencies": {
     "@types/discord-rpc": "^3.0.2",
-    "@types/fs-extra": "^8.0.0",
-    "ansi-to-html": "^0.6.11",
+    "@types/fs-extra": "^8.1.0",
+    "ansi-to-html": "^0.6.14",
     "buffer-json": "^2.0.0",
     "discord-rpc": "^3.1.0",
     "download-file": "^0.1.5",
-    "electron-context-menu": "^0.12.1",
-    "electron-debug": "^3.0.0",
-    "electron-store": "^3.3.0",
-    "electron-unhandled": "^2.2.0",
-    "electron-updater": "^4.0.6",
-    "electron-util": "^0.12.0",
-    "eventemitter2": "^5.0.1",
+    "electron-context-menu": "^0.16.0",
+    "electron-debug": "^3.0.1",
+    "electron-store": "^5.1.0",
+    "electron-unhandled": "^3.0.2",
+    "electron-updater": "^4.2.2",
+    "electron-util": "^0.14.0",
+    "eventemitter2": "^6.0.0",
     "fs-extra": "^8.1.0",
     "mkdir-recursive": "^0.4.0",
     "recursive-readdir": "^2.2.2",
-    "request": "^2.88.0",
-    "source-map-support": "^0.5.13"
+    "request": "^2.88.2",
+    "source-map-support": "^0.5.16"
   },
   "devDependencies": {
-    "@types/jquery": "^3.3.31",
-    "@types/request": "^2.48.2",
+    "@types/jquery": "^3.3.32",
+    "@types/request": "^2.48.4",
     "copy-node-modules": "^1.1.1",
-    "electron": "^5.0.4",
-    "electron-builder": "^20.43.0",
-    "gts": "^1.1.0",
+    "electron": "^8.0.1",
+    "electron-builder": "^22.3.2",
+    "gts": "^1.1.2",
     "ncp": "^2.0.0",
-    "np": "^5.0.3",
-    "typescript": "^3.6.2",
-    "xo": "^0.24.0"
+    "np": "^6.1.0",
+    "patch-package": "^6.2.0",
+    "typescript": "^3.7.5",
+    "xo": "^0.26.1"
   },
   "xo": {
     "envs": [
@@ -65,6 +65,9 @@
     "releaseDraft": false
   },
   "build": {
+		"electronDownload": {
+			"cache": "./cache"
+		},
     "publish": [
       {
         "provider": "generic",
@@ -116,5 +119,11 @@
       ],
       "category": "Network;Chat"
     }
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/hylianmodding/modloader64-gui/issues"
+  },
+  "homepage": "https://github.com/hylianmodding/modloader64-gui#readme",
+  "main": "fix_browser.js",
+	"keywords": []
 }

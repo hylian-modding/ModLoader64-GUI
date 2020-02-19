@@ -25,7 +25,7 @@ export class RomManager {
       fs.readdirSync(romsDir).forEach((file: string) => {
         let p: string = path.join(romsDir, file);
         let parse = path.parse(p);
-        if (parse.ext === '.n64' || parse.ext === '.z64') {
+        if (parse.ext === '.n64' || parse.ext === '.z64' || parse.ext === ".v64" || parse.ext === ".zip") {
           let rom: Rom = new Rom(p);
           this.roms.push(rom);
         }

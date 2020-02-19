@@ -110,7 +110,7 @@ class GeneralFormHandler {
 const formHandler: GeneralFormHandler = new GeneralFormHandler();
 
 function injectItemElement_ModsTab(mod: Mod) {
-  let parent = document.getElementById('mods');
+  let parent = document.getElementById(mod.category as string);
   if (parent !== null && parent !== undefined) {
     let entry = document.createElement('div');
     let chk = document.createElement('input');
@@ -118,8 +118,8 @@ function injectItemElement_ModsTab(mod: Mod) {
     entry.appendChild(chk);
     let icon = document.createElement('img');
     icon.src = 'data:image/' + mod.type + ';base64, ' + mod.icon;
-    icon.width = 30;
-    icon.height = 30;
+    icon.width = 32;
+    icon.height = 32;
     entry.appendChild(icon);
     let text = document.createElement('span');
     text.textContent = ' ' + mod.meta.name + ' ' + mod.meta.version;

@@ -1,0 +1,274 @@
+diff --git a/node_modules/electron/electron.d.ts b/node_modules/electron/electron.d.ts
+index c8a2bcc..da72173 100644
+--- a/node_modules/electron/electron.d.ts
++++ b/node_modules/electron/electron.d.ts
+@@ -106,7 +106,7 @@ declare namespace Electron {
+   const webFrame: WebFrame;
+   const webviewTag: WebviewTag;
+ 
+-  interface App extends NodeJS.EventEmitter {
++  interface App  {
+ 
+     // Docs: http://electronjs.org/docs/api/app
+ 
+@@ -1510,7 +1510,7 @@ Here's a very simple example of creating a custom Jump List:
+     userAgentFallback: string;
+   }
+ 
+-  interface AutoUpdater extends NodeJS.EventEmitter {
++  interface AutoUpdater  {
+ 
+     // Docs: http://electronjs.org/docs/api/auto-updater
+ 
+@@ -1668,7 +1668,7 @@ Here's a very simple example of creating a custom Jump List:
+     webContents: WebContents;
+   }
+ 
+-  class BrowserWindow extends NodeJS.EventEmitter {
++  class BrowserWindow  {
+ 
+     // Docs: http://electronjs.org/docs/api/browser-window
+ 
+@@ -3044,7 +3044,7 @@ This cannot be called when `titleBarStyle` is set to `customButtonsOnHover`.
+     state: string;
+   }
+ 
+-  class ClientRequest extends NodeJS.EventEmitter {
++  class ClientRequest  {
+ 
+     // Docs: http://electronjs.org/docs/api/client-request
+ 
+@@ -3428,7 +3428,7 @@ This cannot be called when `titleBarStyle` is set to `customButtonsOnHover`.
+     stopRecording(resultFilePath?: string): Promise<string>;
+   }
+ 
+-  interface ContextBridge extends NodeJS.EventEmitter {
++  interface ContextBridge  {
+ 
+     // Docs: http://electronjs.org/docs/api/context-bridge
+ 
+@@ -3481,7 +3481,7 @@ This cannot be called when `titleBarStyle` is set to `customButtonsOnHover`.
+     value: string;
+   }
+ 
+-  class Cookies extends NodeJS.EventEmitter {
++  class Cookies  {
+ 
+     // Docs: http://electronjs.org/docs/api/cookies
+ 
+@@ -3638,7 +3638,7 @@ Sets a cookie with `details`.
+     scheme: string;
+   }
+ 
+-  class Debugger extends NodeJS.EventEmitter {
++  class Debugger  {
+ 
+     // Docs: http://electronjs.org/docs/api/debugger
+ 
+@@ -4169,7 +4169,7 @@ Send given command to the debugging target.
+     show(): Promise<void>;
+   }
+ 
+-  class DownloadItem extends NodeJS.EventEmitter {
++  class DownloadItem  {
+ 
+     // Docs: http://electronjs.org/docs/api/download-item
+ 
+@@ -4499,7 +4499,7 @@ If the size is unknown, it returns 0.
+     webgl2: string;
+   }
+ 
+-  interface InAppPurchase extends NodeJS.EventEmitter {
++  interface InAppPurchase  {
+ 
+     // Docs: http://electronjs.org/docs/api/in-app-purchase
+ 
+@@ -4538,7 +4538,7 @@ Retrieves the product descriptions.
+     purchaseProduct(productID: string, quantity?: number): Promise<boolean>;
+   }
+ 
+-  class IncomingMessage extends NodeJS.EventEmitter {
++  class IncomingMessage  {
+ 
+     // Docs: http://electronjs.org/docs/api/incoming-message
+ 
+@@ -4644,7 +4644,7 @@ Retrieves the product descriptions.
+     writeTransferCount: number;
+   }
+ 
+-  interface IpcMain extends NodeJS.EventEmitter {
++  interface IpcMain  {
+ 
+     // Docs: http://electronjs.org/docs/api/ipc-main
+ 
+@@ -4730,7 +4730,7 @@ Retrieves the product descriptions.
+     sender: WebContents;
+   }
+ 
+-  interface IpcRenderer extends NodeJS.EventEmitter {
++  interface IpcRenderer  {
+ 
+     // Docs: http://electronjs.org/docs/api/ipc-renderer
+ 
+@@ -5281,7 +5281,7 @@ where `SYSTEM_IMAGE_NAME` should be replaced with any value from this list.
+     isMacTemplateImage: boolean;
+   }
+ 
+-  interface NativeTheme extends NodeJS.EventEmitter {
++  interface NativeTheme  {
+ 
+     // Docs: http://electronjs.org/docs/api/native-theme
+ 
+@@ -5399,7 +5399,7 @@ Starts recording network events to `path`.
+     readonly currentlyLoggingPath: string;
+   }
+ 
+-  class Notification extends NodeJS.EventEmitter {
++  class Notification  {
+ 
+     // Docs: http://electronjs.org/docs/api/notification
+ 
+@@ -5532,7 +5532,7 @@ Starts recording network events to `path`.
+     y: number;
+   }
+ 
+-  interface PowerMonitor extends NodeJS.EventEmitter {
++  interface PowerMonitor  {
+ 
+     // Docs: http://electronjs.org/docs/api/power-monitor
+ 
+@@ -6119,7 +6119,7 @@ e.g.
+     username?: string;
+   }
+ 
+-  interface Screen extends NodeJS.EventEmitter {
++  interface Screen  {
+ 
+     // Docs: http://electronjs.org/docs/api/screen
+ 
+@@ -6246,7 +6246,7 @@ e.g.
+     label?: string;
+   }
+ 
+-  class Session extends NodeJS.EventEmitter {
++  class Session  {
+ 
+     // Docs: http://electronjs.org/docs/api/session
+ 
+@@ -6701,7 +6701,7 @@ Creates or updates a shortcut link at `shortcutPath`.
+     mimeType?: string;
+   }
+ 
+-  interface SystemPreferences extends NodeJS.EventEmitter {
++  interface SystemPreferences  {
+ 
+     // Docs: http://electronjs.org/docs/api/system-preferences
+ 
+@@ -7236,7 +7236,7 @@ This property is only available on macOS 10.14 Mojave or newer.
+     label: string;
+   }
+ 
+-  class TouchBarColorPicker extends NodeJS.EventEmitter {
++  class TouchBarColorPicker  {
+ 
+     // Docs: http://electronjs.org/docs/api/touch-bar-color-picker
+ 
+@@ -7248,7 +7248,7 @@ This property is only available on macOS 10.14 Mojave or newer.
+     selectedColor: string;
+   }
+ 
+-  class TouchBarGroup extends NodeJS.EventEmitter {
++  class TouchBarGroup  {
+ 
+     // Docs: http://electronjs.org/docs/api/touch-bar-group
+ 
+@@ -7258,7 +7258,7 @@ This property is only available on macOS 10.14 Mojave or newer.
+     constructor(options: TouchBarGroupConstructorOptions);
+   }
+ 
+-  class TouchBarLabel extends NodeJS.EventEmitter {
++  class TouchBarLabel  {
+ 
+     // Docs: http://electronjs.org/docs/api/touch-bar-label
+ 
+@@ -7271,7 +7271,7 @@ This property is only available on macOS 10.14 Mojave or newer.
+     textColor: string;
+   }
+ 
+-  class TouchBarPopover extends NodeJS.EventEmitter {
++  class TouchBarPopover  {
+ 
+     // Docs: http://electronjs.org/docs/api/touch-bar-popover
+ 
+@@ -7283,7 +7283,7 @@ This property is only available on macOS 10.14 Mojave or newer.
+     label: string;
+   }
+ 
+-  class TouchBarScrubber extends NodeJS.EventEmitter {
++  class TouchBarScrubber  {
+ 
+     // Docs: http://electronjs.org/docs/api/touch-bar-scrubber
+ 
+@@ -7299,7 +7299,7 @@ This property is only available on macOS 10.14 Mojave or newer.
+     showArrowButtons: boolean;
+   }
+ 
+-  class TouchBarSegmentedControl extends NodeJS.EventEmitter {
++  class TouchBarSegmentedControl  {
+ 
+     // Docs: http://electronjs.org/docs/api/touch-bar-segmented-control
+ 
+@@ -7312,7 +7312,7 @@ This property is only available on macOS 10.14 Mojave or newer.
+     selectedIndex: number;
+   }
+ 
+-  class TouchBarSlider extends NodeJS.EventEmitter {
++  class TouchBarSlider  {
+ 
+     // Docs: http://electronjs.org/docs/api/touch-bar-slider
+ 
+@@ -7326,7 +7326,7 @@ This property is only available on macOS 10.14 Mojave or newer.
+     value: number;
+   }
+ 
+-  class TouchBarSpacer extends NodeJS.EventEmitter {
++  class TouchBarSpacer  {
+ 
+     // Docs: http://electronjs.org/docs/api/touch-bar-spacer
+ 
+@@ -7447,7 +7447,7 @@ This property is only available on macOS 10.14 Mojave or newer.
+     transactionState: ('purchasing' | 'purchased' | 'failed' | 'restored' | 'deferred');
+   }
+ 
+-  class Tray extends NodeJS.EventEmitter {
++  class Tray  {
+ 
+     // Docs: http://electronjs.org/docs/api/tray
+ 
+@@ -7897,7 +7897,7 @@ This value is set to false by default.
+     type: string;
+   }
+ 
+-  class WebContents extends NodeJS.EventEmitter {
++  class WebContents  {
+ 
+     // Docs: http://electronjs.org/docs/api/web-contents
+ 
+@@ -9649,7 +9649,7 @@ Takes a V8 heap snapshot and saves it to `filePath`.
+     zoomLevel: number;
+   }
+ 
+-  interface WebFrame extends NodeJS.EventEmitter {
++  interface WebFrame  {
+ 
+     // Docs: http://electronjs.org/docs/api/web-frame
+ 
+@@ -13419,7 +13419,7 @@ interface Document {
+ }
+ 
+ declare namespace NodeJS {
+-  interface Process extends NodeJS.EventEmitter {
++  interface Process  {
+ 
+     // Docs: http://electronjs.org/docs/api/process
+ 

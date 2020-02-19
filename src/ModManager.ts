@@ -7,6 +7,7 @@ export class Mod {
 	meta?: any;
 	icon?: string;
 	type?: string;
+	category?: string;
 
 	constructor(file: string) {
 		this.file = file;
@@ -58,19 +59,20 @@ export class ModManager {
 		}
 	}
 
-	scanMods() {
+	scanMods(dir: string, type: string) {
 		let paks: Pak[] = new Array<Pak>();
-		if (fs.existsSync('./ModLoader/mods')) {
-			fs.readdirSync('./ModLoader/mods').forEach((file: string) => {
+		if (fs.existsSync(dir)) {
+			fs.readdirSync(dir).forEach((file: string) => {
 				let parse = path.parse(file);
 				if (parse.ext === '.pak' || parse.base.indexOf('.pak.disabled') > -1) {
-					let modPak: Pak = new Pak(path.join('./ModLoader/mods', parse.base));
+					let modPak: Pak = new Pak(path.join(dir, parse.base));
 					paks.push(modPak);
 				} else if (
 					parse.ext === '.bps' ||
 					parse.base.indexOf('.bps.disabled') > -1
 				) {
-					let patch = new Mod(path.join('./ModLoader/mods', parse.base));
+					let patch = new Mod(path.join(dir, parse.base));
+					patch.category = '_patches';
 					let icon = '';
 					if (fs.existsSync('./resources/flips.png')) {
 						icon = fs.readFileSync('./resources/flips.png').toString('base64');
@@ -91,6 +93,7 @@ export class ModManager {
 		}
 		paks.forEach((modPak: Pak) => {
 			let mod = new Mod(modPak.fileName);
+			mod.category = type;
 			this.mods.push(mod);
 			for (let i = 0; i < modPak.pak.header.files.length; i++) {
 				if (modPak.pak.header.files[i].filename.indexOf('package.json') > -1) {
