@@ -1,6 +1,6 @@
 'use strict';
 import path from 'path';
-import { app, BrowserWindow, Menu, ipcMain } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, dialog, globalShortcut } from 'electron';
 import { is, api } from 'electron-util';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
@@ -15,6 +15,8 @@ import { RomManager } from './RomManager';
 import request from 'request';
 import crypto from 'crypto';
 import { DiscordIntegration } from './discord/discord';
+import { ModLoaderErrorCodes } from './ModLoaderErrorCodes';
+import { ModLoader64GUIConfig } from './ModLoader64GUIConfig';
 
 require('source-map-support').install();
 
@@ -194,10 +196,10 @@ const createLoadingWindow = async () => {
 
 	win.on('ready-to-show', () => {
 		win.show();
-		console.log("TRYING TO UPDATE MODLOADER");
+		console.log('TRYING TO UPDATE MODLOADER');
 		updateProcess = fork(__dirname + '/updateModLoader.js');
 		updateProcess.on('exit', (code: number, signal: string) => {
-			console.log("TRYING TO UPDATE PLUGINS");
+			console.log('TRYING TO UPDATE PLUGINS');
 			updateProcess = fork(__dirname + '/updateCores.js');
 			updateProcess.on('exit', (code: number, signal: string) => {
 				updateProcess = fork(__dirname + '/updatePlugins.js');
@@ -206,10 +208,10 @@ const createLoadingWindow = async () => {
 						updateProcess = null;
 						return;
 					}
-					console.log("TRYING TO UPDATE GUI");
+					console.log('TRYING TO UPDATE GUI');
 					updateProcess = fork(__dirname + '/updateGUI.js');
 					updateProcess.on('exit', (code: number, signal: string) => {
-						console.log("GUI UPDATE CODE " + code);
+						console.log('GUI UPDATE CODE ' + code);
 						if (code == 1852400485) {
 							app.relaunch();
 							app.exit();
@@ -267,7 +269,20 @@ const createMainWindow = async () => {
 			nodeIntegration: true,
 		},
 	});
-
+/* 	if (!fs.existsSync("./ModLoader64-GUI-config.json")){
+		fs.writeFileSync("./ModLoader64-GUI-config.json", JSON.stringify(new ModLoader64GUIConfig(), null, 2));
+	}
+	let cfg: ModLoader64GUIConfig = JSON.parse(fs.readFileSync("./ModLoader64-GUI-config.json").toString());
+	globalShortcut.register(cfg.keybindings.soft_reset.key, () => {
+		let evt: any = { id: "SOFT_RESET_PRESSED", data: {} };
+		if (ModLoader64 !== undefined || ModLoader64 !== null) {
+			if (!ModLoader64.killed) {
+				ModLoader64.send(
+					JSON.stringify(new GUITunnelPacket('forwardToML', evt.id, evt))
+				);
+			}
+		}
+	}) */
 	win.on('ready-to-show', () => {
 		transitionTimer = setInterval(() => {
 			if (loadingWindow && updateProcess == null) {
@@ -307,7 +322,7 @@ const createMainWindow = async () => {
 				}
 				loadingWindow.close();
 				win.setTitle(
-					app.name +
+					"ModLoader64-GUI" +
 					' ' +
 					app.getVersion() +
 					' | ' +
@@ -412,7 +427,11 @@ async function startModLoader() {
 			}
 		}
 	});
-	ModLoader64.on('exit', () => {
+	ModLoader64.on('exit', (code: number) => {
+		console.log(code);
+		if (code !== 0 && code < 100) {
+			dialog.showErrorBox("ModLoader64 has crashed!", ModLoaderErrorCodes[code]);
+		}
 		try {
 			mainWindow.setPosition(
 				runningWindow.getPosition()[0],

@@ -1,16 +1,8 @@
-const ncp = require('ncp');
+let fse = require('fs-extra');
 
-ncp("./src", "./app", function (err) {
-	if (err) {
-		return console.error(err);
-	}
-	console.log('done!');
-});
+let p = fse.readJSONSync("./package.json");
+delete p["build"];
+fse.writeJSONSync("./resources/package.json", p);
 
-ncp("./resources", "./app", function (err) {
-	if (err) {
-		return console.error(err);
-	}
-	console.log('done!');
-});
-
+fse.copySync("./src", "./app");
+fse.copySync("./resources", "./app");

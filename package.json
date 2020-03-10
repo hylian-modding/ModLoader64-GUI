@@ -1,7 +1,7 @@
 {
   "name": "modloader64-gui",
   "productName": "modloader64 gui",
-  "version": "1.0.0",
+  "version": "1.1.18",
   "description": "My remarkable app",
   "license": "GPL",
   "repository": {
@@ -11,15 +11,13 @@
   "author": "denoflions <denvstheworld@gmail.com> (http://hylianmodding.com)",
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
-    "lint": "xo",
-    "test": "npm run lint",
     "build": "node ./resources.js && tsc && node ./fix_browser.js",
     "start": "npm run build && electron ./app",
     "start_debug": "electron ./app",
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder --windows && electron-builder --linux",
-    "release": "np",
-    "fix": "gts fix"
+    "publish": "npm run bump && npm run dist",
+    "bump": "npm version --no-git-tag-version patch"
   },
   "dependencies": {
     "@types/discord-rpc": "^3.0.2",
@@ -47,8 +45,6 @@
     "copy-node-modules": "^1.1.1",
     "electron": "^8.0.1",
     "electron-builder": "^22.3.2",
-    "gts": "^1.1.2",
-    "ncp": "^2.0.0",
     "np": "^6.1.0",
     "patch-package": "^6.2.0",
     "typescript": "^3.7.5",
@@ -65,9 +61,9 @@
     "releaseDraft": false
   },
   "build": {
-		"electronDownload": {
-			"cache": "./cache"
-		},
+    "electronDownload": {
+      "cache": "./cache"
+    },
     "publish": [
       {
         "provider": "generic",
@@ -124,6 +120,6 @@
     "url": "https://github.com/hylianmodding/modloader64-gui/issues"
   },
   "homepage": "https://github.com/hylianmodding/modloader64-gui#readme",
-  "main": "fix_browser.js",
-	"keywords": []
+  "main": "index.js",
+  "keywords": []
 }

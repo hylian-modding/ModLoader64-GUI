@@ -15,7 +15,7 @@ class WebSideMessageHandlers {
   @TunnelMessageHandler('onLog')
   onLog(evt: any) {
     hooks.print(evt);
-  }
+	}
 }
 
 const handlers = new WebSideMessageHandlers(ipcRenderer, ipcRenderer);
