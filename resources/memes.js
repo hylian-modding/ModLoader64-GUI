@@ -42,20 +42,27 @@ var loading = [
 	"Having the highest MMR in OOT Rando",
 	"Lurking in dev VC but not working on Modloader",
 	"Adding Quake physics",
-	"Grog punch goblin",
-	"Slaying enemies with ball bearings",
-	"Torching the manor",
-	"\"It works on my system\"",
 	"Getting the source code",
 	"Releasing Modloader before 2030",
 	"Making models but not releasing them",
-	"Online support for Wrestlemania 2000 when",
 	"Getting SRM from bomb replication",
 	"Wasting memory",
 	"Crashing because someone walked into your scene",
 	"Punching things to tame them",
 	"Breeding dinos instead of coding"
 ];
+
+var covid19_memes = [
+	"Randomizing the toilet paper",
+	"Hoarding all the hand sanitizer",
+	"Clearing out the grocery store",
+	"Working from home",
+	"Looking for face masks",
+	"Sheltering in-place"
+];
+
+loading.splice(0, loading.length);
+loading.push(...covid19_memes);
 
 function randomShitpost() {
 	var thisRand;
@@ -70,12 +77,14 @@ function randomShitpost() {
 	thisRand = free[Math.floor(Math.random() * free.length)];
 
 	icache[thisRand] = true;
-	
+
 	var item = loading[thisRand];
 	document.getElementById("meme").textContent = item;
 }
 
 randomShitpost();
+
+var dot = "☣️";
 
 setInterval(() => {
 	let dots = "";
@@ -84,7 +93,7 @@ setInterval(() => {
 		randomShitpost();
 	}
 	for (let i = 0; i < d; i++) {
-		dots += ".";
+		dots += dot;
 	}
 	d++;
 	document.getElementById("dots").textContent = dots;
