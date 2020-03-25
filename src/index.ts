@@ -63,7 +63,6 @@ class NodeSideMessageHandlers {
 
 	@TunnelMessageHandler('onStartButtonPressed')
 	async onStart(values: GUIValues) {
-		console.log(values);
 		let configPath: string = path.resolve(
 			path.join('./ModLoader', 'ModLoader64-config.json')
 		);
@@ -98,10 +97,11 @@ class NodeSideMessageHandlers {
 
 	@TunnelMessageHandler('onInputConfig')
 	onInputConfigClick(evt: any) {
-		let p = path.resolve('./ModLoader/InputConfigTool.exe');
+		let p = "\"" + path.resolve('./ModLoader/InputConfigTool.exe') + "\"";
 		if (process.platform.trim() !== 'win32') {
 			p = p.replace('.exe', '');
 		}
+		console.log(p);
 		let child = exec(
 			p,
 			{
