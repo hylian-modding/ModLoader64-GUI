@@ -283,11 +283,4 @@ if (inputConfig !== null) {
 	});
 }
 
-let verify = document.getElementById('verify-files');
-if (verify !== null) {
-	verify.addEventListener('click', () => {
-		handlers.layer.send('verifyFiles', {});
-	});
-}
-
 module.exports = hooks;
