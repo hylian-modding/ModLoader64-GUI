@@ -165,11 +165,6 @@ function injectItemElement_RomsTab(
 		}
 		chk.name = 'selectedRom';
 		entry.appendChild(chk);
-    /* let icon = document.createElement('img');
-		icon.src = 'data:image/png;base64, ' + _icon;
-		icon.width = 30;
-		icon.height = 30;
-		entry.appendChild(icon); */
 		let text = document.createElement('span');
 		if (elemBaseName !== null && elemBaseName !== undefined) {
 			text.id = elemBaseName + '_span';
@@ -239,16 +234,6 @@ class WebSideMessageHandlers {
 	onLog(msg: string) {
 		hooks.hooks.console(msg);
 		console.log(msg);
-	}
-
-	@TunnelMessageHandler('hashMismatch')
-	onMismatch(evt: any) {
-		alert('File mismatch found.');
-	}
-
-	@TunnelMessageHandler('hashMatch')
-	onMatch(evt: any) {
-		alert('No anomalies found.');
 	}
 }
 
