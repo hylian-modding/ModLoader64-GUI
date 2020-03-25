@@ -114,7 +114,7 @@ function injectItemElement_ModsTab(mod: Mod) {
 	if (parent !== null && parent !== undefined) {
 		let entry = document.createElement('div');
 		let chk = document.createElement('input');
-		chk.id = mod.meta.name;
+		chk.id = mod.meta.name.replace(" ", "_");
 		entry.appendChild(chk);
 		let icon = document.createElement('img');
 		icon.src = 'data:image/' + mod.type + ';base64, ' + mod.icon;
