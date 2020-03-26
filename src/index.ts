@@ -40,16 +40,6 @@ let roms: RomManager;
 let discord: DiscordIntegration;
 let rom = '';
 
-class FileHash {
-	file: string;
-	hash: string;
-
-	constructor(file: string, hash: string) {
-		this.file = file;
-		this.hash = hash;
-	}
-}
-
 class NodeSideMessageHandlers {
 	layer: MessageLayer;
 
@@ -63,6 +53,7 @@ class NodeSideMessageHandlers {
 
 	@TunnelMessageHandler('onStartButtonPressed')
 	async onStart(values: GUIValues) {
+		console.log(values);
 		let configPath: string = path.resolve(
 			path.join('./ModLoader', 'ModLoader64-config.json')
 		);
@@ -72,9 +63,9 @@ class NodeSideMessageHandlers {
 		config['NetworkEngine.Client'].password = values.password;
 		config['ModLoader64'].isServer = false;
 		config['ModLoader64'].rom = values.rom;
+		config['NetworkEngine.Client'].isSinglePlayer = values.isOffline;
+		config['NetworkEngine.Client'].forceServerOverride = false;
 		rom = values.rom;
-		config['NetworkEngine.Client'].ip = values.server.split(':')[0];
-		config['NetworkEngine.Client'].port = values.server.split(':')[1];
 		let found = false;
 		fs.readdirSync('./ModLoader/mods').forEach((file: string) => {
 			let parse = path.parse(file);
@@ -217,7 +208,7 @@ const createRunningWindow = async () => {
 
 const createMainWindow = async () => {
 	const win = new BrowserWindow({
-		title: app.name,
+		title: "",
 		show: false,
 		width: 600,
 		height: 400,

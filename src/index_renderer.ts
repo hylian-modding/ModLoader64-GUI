@@ -5,20 +5,6 @@ import { ModManager, Mod, ModStatus } from './ModManager';
 import { GUIValues } from './GUIValues';
 import { RomManager, Rom } from './RomManager';
 
-const hooks = { hooks: { console(msg: string) { } } };
-const servers = require('./servers');
-
-function getSelectedOption(sel: HTMLSelectElement) {
-	let opt;
-	for (let i = 0, len = sel.options.length; i < len; i++) {
-		opt = sel.options[i];
-		if (opt.selected === true) {
-			break;
-		}
-	}
-	return opt;
-}
-
 class GeneralFormHandler {
 	get nickname(): string {
 		let _nickname: HTMLInputElement = document.getElementById(
@@ -68,42 +54,26 @@ class GeneralFormHandler {
 		$('#password').textbox('setText', pw);
 	}
 
-	get selectedServer(): string {
-		let _server: HTMLSelectElement = document.getElementById(
-			'cc'
-		) as HTMLSelectElement;
-		let selected = getSelectedOption(_server) as HTMLOptionElement;
-		let value = selected.text;
-		for (let i = 0; i < servers.length; i++) {
-			if (value === servers[i].name) {
-				return servers[i].url + ':' + servers[i].port;
-			}
-		}
-		return '';
-	}
-
-	set selectedServer(ip: string) {
-		let _server: HTMLSelectElement = document.getElementById(
-			'cc'
-		) as HTMLSelectElement;
-		for (let i = 0; i < servers.length; i++) {
-			if (ip === servers[i].ip) {
-				for (let k = 0; k < _server.options.length; k++) {
-					if (_server.options[k].text === servers[i].name) {
-						_server.selectedIndex = k;
-						break;
-					}
-				}
-			}
-		}
-	}
-
 	get selectedRom(): string {
 		return SELECTED_ROM;
 	}
 
 	set selectedRom(rom: string) {
 		SELECTED_ROM = rom;
+	}
+
+	get isOffline(): boolean{
+		return $('input:checkbox[name=single_player]').is(':checked');
+	}
+
+	set isOffline(b: boolean){
+		if (b){
+			//@ts-ignore
+			$('#single_player').checkbox('check');
+		}else{
+			//@ts-ignore
+			$('#single_player').checkbox('uncheck');
+		}
 	}
 }
 
@@ -226,13 +196,12 @@ class WebSideMessageHandlers {
 		formHandler.nickname = config['NetworkEngine.Client'].nickname;
 		formHandler.lobby = config['NetworkEngine.Client'].lobby;
 		formHandler.password = config['NetworkEngine.Client'].password;
-		formHandler.selectedServer = config['NetworkEngine.Client'].ip;
 		formHandler.selectedRom = config['ModLoader64'].rom;
+		formHandler.isOffline = config['NetworkEngine.Client'].isSinglePlayer;
 	}
 
 	@TunnelMessageHandler('onLog')
 	onLog(msg: string) {
-		hooks.hooks.console(msg);
 		console.log(msg);
 	}
 }
@@ -255,7 +224,7 @@ if (startButton !== null) {
 				formHandler.lobby,
 				formHandler.password,
 				formHandler.selectedRom,
-				formHandler.selectedServer
+				formHandler.isOffline
 			)
 		);
 	});
@@ -267,5 +236,3 @@ if (inputConfig !== null) {
 		handlers.layer.send('onInputConfig', {});
 	});
 }
-
-module.exports = hooks;
