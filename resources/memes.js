@@ -58,7 +58,8 @@ var covid19_memes = [
 	"Clearing out the grocery store",
 	"Working from home",
 	"Looking for face masks",
-	"Sheltering in-place"
+	"Sheltering in place",
+	"Injecting with disinfectant"
 ];
 
 loading.splice(0, loading.length);
