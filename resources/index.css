@@ -1,7 +1,6 @@
 body {
 	background-image: url("./background_dark.png");
-	background-color: #424242;
-	background-repeat: no-repeat;
+	background-size: cover;
 	font-family: sans-serif;
 }
 
