@@ -17,3 +17,6 @@ body {
 	position: relative;
 	top: -25px;
 }
+#start {
+	margin-top: 2px;
+}
