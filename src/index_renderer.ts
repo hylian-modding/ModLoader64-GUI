@@ -62,15 +62,15 @@ class GeneralFormHandler {
 		SELECTED_ROM = rom;
 	}
 
-	get isOffline(): boolean{
+	get isOffline(): boolean {
 		return $('input:checkbox[name=single_player]').is(':checked');
 	}
 
-	set isOffline(b: boolean){
-		if (b){
+	set isOffline(b: boolean) {
+		if (b) {
 			//@ts-ignore
 			$('#single_player').checkbox('check');
-		}else{
+		} else {
 			//@ts-ignore
 			$('#single_player').checkbox('uncheck');
 		}
@@ -83,9 +83,11 @@ function injectItemElement_ModsTab(mod: Mod) {
 	let parent = document.getElementById(mod.category as string);
 	if (parent !== null && parent !== undefined) {
 		let entry = document.createElement('div');
-		let chk = document.createElement('input');
-		chk.id = mod.meta.name.replace(" ", "_");
-		entry.appendChild(chk);
+		if (mod.category !== "_cores") {
+			let chk = document.createElement('input');
+			chk.id = mod.hash!;
+			entry.appendChild(chk);
+		}
 		let icon = document.createElement('img');
 		icon.src = 'data:image/' + mod.type + ';base64, ' + mod.icon;
 		icon.width = 32;
@@ -96,20 +98,22 @@ function injectItemElement_ModsTab(mod: Mod) {
 		entry.appendChild(text);
 		parent.appendChild(entry);
 		let box;
-		box = $('#' + mod.meta.name);
+		box = $('#' + mod.hash!);
 		let isChecked = true;
 		if (mod.file.indexOf('.disabled') > -1) {
 			isChecked = false;
 		}
-		//@ts-ignore
-		box.checkbox({
-			checked: isChecked,
-			onChange: (checked: boolean) => {
-				let status: ModStatus = new ModStatus(mod);
-				status.enabled = checked;
-				handlers.layer.send('onModStatusChanged', status);
-			},
-		});
+		if (mod.category !== "_cores") {
+			//@ts-ignore
+			box.checkbox({
+				checked: isChecked,
+				onChange: (checked: boolean) => {
+					let status: ModStatus = new ModStatus(mod);
+					status.enabled = checked;
+					handlers.layer.send('onModStatusChanged', status);
+				},
+			});
+		}
 	}
 }
 
@@ -236,3 +240,27 @@ if (inputConfig !== null) {
 		handlers.layer.send('onInputConfig', {});
 	});
 }
+
+/*
+let arr: Array<any> = [];
+for (let i = 0; i < 20; i++){
+	arr.push(JSON.parse(JSON.stringify({ Lobby: 'test1', Players: 1, Mods: "OotOnline", Locked: "🔒", Patch: "n/a" })));
+}
+setTimeout(() => {
+	//@ts-ignore
+	$("#browserTable").datagrid({
+		data: arr
+	});
+	//@ts-ignore
+	$('#browserTable').datagrid('clientPaging');
+}, 5000); */
+
+/* $.getJSON('https://nexus.inpureprojects.info/ModLoader64/repo/mods.json', function(data) {
+	Object.keys(data).forEach((key: string)=>{
+		//@ts-ignore
+		$('#repoTable').datagrid('appendRow', {Name: data[key].name, Installed: true});
+	});
+	//@ts-ignore
+	$('#repoTable').datagrid('clientPaging');
+});
+ */

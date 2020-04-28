@@ -47,22 +47,8 @@ var loading = [
 	"Making models but not releasing them",
 	"Getting SRM from bomb replication",
 	"Wasting memory",
-	"Crashing because someone walked into your scene",
-	"Punching things to tame them",
-	"Breeding dinos instead of coding"
+	"Crashing because someone walked into your scene"
 ];
-
-var covid19_memes = [
-	"Randomizing the toilet paper",
-	"Hoarding all the hand sanitizer",
-	"Clearing out the grocery store",
-	"Working from home",
-	"Looking for face masks",
-	"Sheltering in-place"
-];
-
-loading.splice(0, loading.length);
-loading.push(...covid19_memes);
 
 function randomShitpost() {
 	var thisRand;
@@ -79,12 +65,16 @@ function randomShitpost() {
 	icache[thisRand] = true;
 
 	var item = loading[thisRand];
+	if (item === "" || item === undefined || item === null){
+		icache.splice(0, icache.length);
+		item = "Uncaching the memes";
+	}
 	document.getElementById("meme").textContent = item;
 }
 
 randomShitpost();
 
-var dot = "☣️";
+var dot = ".";
 
 setInterval(() => {
 	let dots = "";

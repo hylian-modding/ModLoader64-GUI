@@ -216,7 +216,7 @@ const createMainWindow = async () => {
 			nodeIntegration: true,
 		},
 	});
-/* 	if (!fs.existsSync("./ModLoader64-GUI-config.json")){
+	if (!fs.existsSync("./ModLoader64-GUI-config.json")) {
 		fs.writeFileSync("./ModLoader64-GUI-config.json", JSON.stringify(new ModLoader64GUIConfig(), null, 2));
 	}
 	let cfg: ModLoader64GUIConfig = JSON.parse(fs.readFileSync("./ModLoader64-GUI-config.json").toString());
@@ -229,7 +229,7 @@ const createMainWindow = async () => {
 				);
 			}
 		}
-	}) */
+	})
 	win.on('ready-to-show', () => {
 		transitionTimer = setInterval(() => {
 			if (loadingWindow && updateProcess == null) {
