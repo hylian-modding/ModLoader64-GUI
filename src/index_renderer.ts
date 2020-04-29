@@ -241,6 +241,13 @@ if (inputConfig !== null) {
 	});
 }
 
+let flips = document.getElementById('flips');
+if (flips !== null){
+	flips.addEventListener('click', ()=>{
+		handlers.layer.send('onFlips', {});
+	});
+}
+
 /*
 let arr: Array<any> = [];
 for (let i = 0; i < 20; i++){
@@ -255,12 +262,13 @@ setTimeout(() => {
 	$('#browserTable').datagrid('clientPaging');
 }, 5000); */
 
-/* $.getJSON('https://nexus.inpureprojects.info/ModLoader64/repo/mods.json', function(data) {
-	Object.keys(data).forEach((key: string)=>{
+
+/* $.getJSON('https://nexus.inpureprojects.info/ModLoader64/repo/mods.json', {_: new Date().getTime()}, function (data) {
+	Object.keys(data).forEach((key: string) => {
 		//@ts-ignore
-		$('#repoTable').datagrid('appendRow', {Name: data[key].name, Installed: true});
+		$('#repoTable').datagrid('appendRow', { Name: data[key].name, Installed: true });
 	});
 	//@ts-ignore
 	$('#repoTable').datagrid('clientPaging');
-});
- */
+}); */
+

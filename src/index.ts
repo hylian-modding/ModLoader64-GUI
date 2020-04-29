@@ -109,6 +109,30 @@ class NodeSideMessageHandlers {
 		});
 	}
 
+	@TunnelMessageHandler('onFlips')
+	onFlips(evt: any) {
+		let p = "\"" + path.resolve('./ModLoader/flips.exe') + "\"";
+		if (process.platform.trim() !== 'win32') {
+			p = p.replace('.exe', '');
+		}
+		let child = exec(
+			p,
+			{
+				cwd: path.resolve('./ModLoader'),
+			},
+			(error: any) => {
+				if (error) {
+					console.log(error);
+				}
+			}
+		);
+		child.on('exit', (code: number) => {
+			console.log(code);
+			app.relaunch();
+			app.exit();
+		});
+	}
+
 	@TunnelMessageHandler('forwardToML')
 	onForwardToML(evt: any) {
 		ModLoader64.send(
