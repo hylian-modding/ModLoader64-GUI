@@ -47,7 +47,10 @@ var loading = [
 	"Making models but not releasing them",
 	"Getting SRM from bomb replication",
 	"Wasting memory",
-	"Crashing because someone walked into your scene"
+	"Crashing because someone walked into your scene",
+	"Turning Zelda into a chest",
+	"Working on Wind Waker Online"
+	"Exploding Psi's 200 IQ brain"
 ];
 
 function randomShitpost() {
