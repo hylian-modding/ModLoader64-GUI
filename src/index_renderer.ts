@@ -5,20 +5,6 @@ import { ModManager, Mod, ModStatus } from './ModManager';
 import { GUIValues } from './GUIValues';
 import { RomManager, Rom } from './RomManager';
 
-const hooks = { hooks: { console(msg: string) { } } };
-const servers = require('./servers');
-
-function getSelectedOption(sel: HTMLSelectElement) {
-	let opt;
-	for (let i = 0, len = sel.options.length; i < len; i++) {
-		opt = sel.options[i];
-		if (opt.selected === true) {
-			break;
-		}
-	}
-	return opt;
-}
-
 class GeneralFormHandler {
 	get nickname(): string {
 		let _nickname: HTMLInputElement = document.getElementById(
@@ -68,42 +54,26 @@ class GeneralFormHandler {
 		$('#password').textbox('setText', pw);
 	}
 
-	get selectedServer(): string {
-		let _server: HTMLSelectElement = document.getElementById(
-			'cc'
-		) as HTMLSelectElement;
-		let selected = getSelectedOption(_server) as HTMLOptionElement;
-		let value = selected.text;
-		for (let i = 0; i < servers.length; i++) {
-			if (value === servers[i].name) {
-				return servers[i].url + ':' + servers[i].port;
-			}
-		}
-		return '';
-	}
-
-	set selectedServer(ip: string) {
-		let _server: HTMLSelectElement = document.getElementById(
-			'cc'
-		) as HTMLSelectElement;
-		for (let i = 0; i < servers.length; i++) {
-			if (ip === servers[i].ip) {
-				for (let k = 0; k < _server.options.length; k++) {
-					if (_server.options[k].text === servers[i].name) {
-						_server.selectedIndex = k;
-						break;
-					}
-				}
-			}
-		}
-	}
-
 	get selectedRom(): string {
 		return SELECTED_ROM;
 	}
 
 	set selectedRom(rom: string) {
 		SELECTED_ROM = rom;
+	}
+
+	get isOffline(): boolean {
+		return $('input:checkbox[name=single_player]').is(':checked');
+	}
+
+	set isOffline(b: boolean) {
+		if (b) {
+			//@ts-ignore
+			$('#single_player').checkbox('check');
+		} else {
+			//@ts-ignore
+			$('#single_player').checkbox('uncheck');
+		}
 	}
 }
 
@@ -113,9 +83,11 @@ function injectItemElement_ModsTab(mod: Mod) {
 	let parent = document.getElementById(mod.category as string);
 	if (parent !== null && parent !== undefined) {
 		let entry = document.createElement('div');
-		let chk = document.createElement('input');
-		chk.id = mod.meta.name;
-		entry.appendChild(chk);
+		if (mod.category !== "_cores") {
+			let chk = document.createElement('input');
+			chk.id = mod.hash!;
+			entry.appendChild(chk);
+		}
 		let icon = document.createElement('img');
 		icon.src = 'data:image/' + mod.type + ';base64, ' + mod.icon;
 		icon.width = 32;
@@ -126,20 +98,22 @@ function injectItemElement_ModsTab(mod: Mod) {
 		entry.appendChild(text);
 		parent.appendChild(entry);
 		let box;
-		box = $('#' + mod.meta.name);
+		box = $('#' + mod.hash!);
 		let isChecked = true;
 		if (mod.file.indexOf('.disabled') > -1) {
 			isChecked = false;
 		}
-		//@ts-ignore
-		box.checkbox({
-			checked: isChecked,
-			onChange: (checked: boolean) => {
-				let status: ModStatus = new ModStatus(mod);
-				status.enabled = checked;
-				handlers.layer.send('onModStatusChanged', status);
-			},
-		});
+		if (mod.category !== "_cores") {
+			//@ts-ignore
+			box.checkbox({
+				checked: isChecked,
+				onChange: (checked: boolean) => {
+					let status: ModStatus = new ModStatus(mod);
+					status.enabled = checked;
+					handlers.layer.send('onModStatusChanged', status);
+				},
+			});
+		}
 	}
 }
 
@@ -165,11 +139,6 @@ function injectItemElement_RomsTab(
 		}
 		chk.name = 'selectedRom';
 		entry.appendChild(chk);
-    /* let icon = document.createElement('img');
-		icon.src = 'data:image/png;base64, ' + _icon;
-		icon.width = 30;
-		icon.height = 30;
-		entry.appendChild(icon); */
 		let text = document.createElement('span');
 		if (elemBaseName !== null && elemBaseName !== undefined) {
 			text.id = elemBaseName + '_span';
@@ -231,24 +200,13 @@ class WebSideMessageHandlers {
 		formHandler.nickname = config['NetworkEngine.Client'].nickname;
 		formHandler.lobby = config['NetworkEngine.Client'].lobby;
 		formHandler.password = config['NetworkEngine.Client'].password;
-		formHandler.selectedServer = config['NetworkEngine.Client'].ip;
 		formHandler.selectedRom = config['ModLoader64'].rom;
+		formHandler.isOffline = config['NetworkEngine.Client'].isSinglePlayer;
 	}
 
 	@TunnelMessageHandler('onLog')
 	onLog(msg: string) {
-		hooks.hooks.console(msg);
 		console.log(msg);
-	}
-
-	@TunnelMessageHandler('hashMismatch')
-	onMismatch(evt: any) {
-		alert('File mismatch found.');
-	}
-
-	@TunnelMessageHandler('hashMatch')
-	onMatch(evt: any) {
-		alert('No anomalies found.');
 	}
 }
 
@@ -270,7 +228,7 @@ if (startButton !== null) {
 				formHandler.lobby,
 				formHandler.password,
 				formHandler.selectedRom,
-				formHandler.selectedServer
+				formHandler.isOffline
 			)
 		);
 	});
@@ -283,11 +241,34 @@ if (inputConfig !== null) {
 	});
 }
 
-let verify = document.getElementById('verify-files');
-if (verify !== null) {
-	verify.addEventListener('click', () => {
-		handlers.layer.send('verifyFiles', {});
+let flips = document.getElementById('flips');
+if (flips !== null){
+	flips.addEventListener('click', ()=>{
+		handlers.layer.send('onFlips', {});
 	});
 }
 
-module.exports = hooks;
+/*
+let arr: Array<any> = [];
+for (let i = 0; i < 20; i++){
+	arr.push(JSON.parse(JSON.stringify({ Lobby: 'test1', Players: 1, Mods: "OotOnline", Locked: "🔒", Patch: "n/a" })));
+}
+setTimeout(() => {
+	//@ts-ignore
+	$("#browserTable").datagrid({
+		data: arr
+	});
+	//@ts-ignore
+	$('#browserTable').datagrid('clientPaging');
+}, 5000); */
+
+
+/* $.getJSON('https://nexus.inpureprojects.info/ModLoader64/repo/mods.json', {_: new Date().getTime()}, function (data) {
+	Object.keys(data).forEach((key: string) => {
+		//@ts-ignore
+		$('#repoTable').datagrid('appendRow', { Name: data[key].name, Installed: true });
+	});
+	//@ts-ignore
+	$('#repoTable').datagrid('clientPaging');
+}); */
+

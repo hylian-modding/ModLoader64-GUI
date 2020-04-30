@@ -1,13 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import { Pak } from './PakFormat';
+import crypto from 'crypto';
 
 export class Mod {
   file: string;
   meta?: any;
   icon?: string;
   type?: string;
-  category?: string;
+	category?: string;
+	hash?: string;
 
   constructor(file: string) {
     this.file = file;
@@ -65,8 +67,12 @@ export class ModManager {
       fs.readdirSync(dir).forEach((file: string) => {
         let parse = path.parse(file);
         if (parse.ext === '.pak' || parse.base.indexOf('.pak.disabled') > -1) {
-          let modPak: Pak = new Pak(path.join(dir, parse.base));
-          paks.push(modPak);
+					let modPak: Pak = new Pak(path.join(dir, parse.base));
+					if (modPak.verify()){
+						paks.push(modPak);
+					}else{
+						console.log("THIS PAK (" + file + ") is corrupt!");
+					}
         } else if (
           parse.ext === '.bps' ||
           parse.base.indexOf('.bps.disabled') > -1
@@ -86,7 +92,8 @@ export class ModManager {
             name: file.replace('.bps', '').replace('.disabled', ''),
             version: '',
           };
-          patch.icon = icon;
+					patch.icon = icon;
+					patch.hash = crypto.createHash('md5').update(fs.readFileSync(patch.file)).digest('hex');
           this.mods.push(patch);
         }
       });
@@ -120,7 +127,8 @@ export class ModManager {
         if (mod.meta.isBPS){
           mod.category = "_patches";
         }
-      }
+			}
+			mod.hash = crypto.createHash('md5').update(fs.readFileSync(mod.file)).digest('hex');
       this.mods.push(mod);
     });
   }

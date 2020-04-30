@@ -40,16 +40,6 @@ let roms: RomManager;
 let discord: DiscordIntegration;
 let rom = '';
 
-class FileHash {
-	file: string;
-	hash: string;
-
-	constructor(file: string, hash: string) {
-		this.file = file;
-		this.hash = hash;
-	}
-}
-
 class NodeSideMessageHandlers {
 	layer: MessageLayer;
 
@@ -63,6 +53,7 @@ class NodeSideMessageHandlers {
 
 	@TunnelMessageHandler('onStartButtonPressed')
 	async onStart(values: GUIValues) {
+		console.log(values);
 		let configPath: string = path.resolve(
 			path.join('./ModLoader', 'ModLoader64-config.json')
 		);
@@ -72,9 +63,9 @@ class NodeSideMessageHandlers {
 		config['NetworkEngine.Client'].password = values.password;
 		config['ModLoader64'].isServer = false;
 		config['ModLoader64'].rom = values.rom;
+		config['NetworkEngine.Client'].isSinglePlayer = values.isOffline;
+		config['NetworkEngine.Client'].forceServerOverride = false;
 		rom = values.rom;
-		config['NetworkEngine.Client'].ip = values.server.split(':')[0];
-		config['NetworkEngine.Client'].port = values.server.split(':')[1];
 		let found = false;
 		fs.readdirSync('./ModLoader/mods').forEach((file: string) => {
 			let parse = path.parse(file);
@@ -118,47 +109,27 @@ class NodeSideMessageHandlers {
 		});
 	}
 
-	@TunnelMessageHandler('verifyFiles')
-	onVerify(evt: any) {
-		let recursive = require('recursive-readdir');
-		let hashes: FileHash[] = [];
-		let mismatch = false;
-		recursive('./ModLoader', function (err: any, files: string[]) {
-			for (let i = 0; i < files.length; i++) {
-				let _path = path.resolve(files[i]);
-				let _parse = path.parse(files[i]);
-				let hash = crypto
-					.createHash('md5')
-					.update(fs.readFileSync(_path))
-					.digest('hex');
-				hashes.push(new FileHash(_parse.base, hash));
-			}
-			request(
-				'https://nexus.inpureprojects.info/ModLoader64/update/hashes.json',
-				(error, response, body) => {
-					if (!error && response.statusCode === 200) {
-						const remote_hashes = JSON.parse(body);
-						for (let i = 0; i < remote_hashes.length; i++) {
-							for (let j = 0; j < hashes.length; j++) {
-								if (remote_hashes[i].file === hashes[i].file) {
-									console.log('Checking ' + remote_hashes[i].file + '.');
-									console.log(remote_hashes[i].hash + ' vs ' + hashes[i].hash);
-									if (remote_hashes[i].hash !== hashes[i].hash) {
-										console.log('Mismatch!');
-										mismatch = true;
-									}
-									break;
-								}
-							}
-						}
-						if (mismatch) {
-							handlers.layer.send('hashMismatch', {});
-						} else {
-							handlers.layer.send('hashMatch', {});
-						}
-					}
+	@TunnelMessageHandler('onFlips')
+	onFlips(evt: any) {
+		let p = "\"" + path.resolve('./ModLoader/flips.exe') + "\"";
+		if (process.platform.trim() !== 'win32') {
+			p = p.replace('.exe', '');
+		}
+		let child = exec(
+			p,
+			{
+				cwd: path.resolve('./ModLoader'),
+			},
+			(error: any) => {
+				if (error) {
+					console.log(error);
 				}
-			);
+			}
+		);
+		child.on('exit', (code: number) => {
+			console.log(code);
+			app.relaunch();
+			app.exit();
 		});
 	}
 
@@ -261,7 +232,7 @@ const createRunningWindow = async () => {
 
 const createMainWindow = async () => {
 	const win = new BrowserWindow({
-		title: app.name,
+		title: "",
 		show: false,
 		width: 600,
 		height: 400,
@@ -269,7 +240,7 @@ const createMainWindow = async () => {
 			nodeIntegration: true,
 		},
 	});
-/* 	if (!fs.existsSync("./ModLoader64-GUI-config.json")){
+	if (!fs.existsSync("./ModLoader64-GUI-config.json")) {
 		fs.writeFileSync("./ModLoader64-GUI-config.json", JSON.stringify(new ModLoader64GUIConfig(), null, 2));
 	}
 	let cfg: ModLoader64GUIConfig = JSON.parse(fs.readFileSync("./ModLoader64-GUI-config.json").toString());
@@ -282,7 +253,7 @@ const createMainWindow = async () => {
 				);
 			}
 		}
-	}) */
+	})
 	win.on('ready-to-show', () => {
 		transitionTimer = setInterval(() => {
 			if (loadingWindow && updateProcess == null) {
