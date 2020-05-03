@@ -18,7 +18,6 @@
 		<img src="./ml64.png" width="44.4px" height="44.4px" />
 		<span id="title" style="font-family: Nintend; margin-left: 2px; color: #092991">ModLoader</span><span id="title"
 			style="color: #ff3503">64</span>
-		<img src="./cone.png" width="44.4px" height="44.4px" />
 	</p>
 	<div class="easyui-tabs">
 		<div title="General" style="padding:10px">
@@ -28,6 +27,7 @@
 				prompt="lobby"><br />
 			<input id="password" class="easyui-passwordbox" data-options="iconCls:'icon-lock'" style="width:200px"
 				prompt="password"><br />
+<<<<<<< HEAD
 			<select id="cc" class="easyui-combobox" name="servers" style="width:200px;">
 				<option>Official OoTO Server</option>
 				<option>Official BKO Server</option>
@@ -36,6 +36,10 @@
 				<option>Official DK64O Server</option>
 				<option>Official MMO Server</option>
 			</select>
+=======
+			<input id="single_player" class="easyui-checkbox" name="single_player" value="single_player"
+				label="Offline Mode:" labelWidth="90">
+>>>>>>> 34be0ab530f293d9a2490c4014c85a689861c01b
 			<br /><a href="#" id="start" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Start</a>
 		</div>
 		<div id="roms" title="Games" stype="padding:10px">
@@ -43,24 +47,151 @@
 		</div>
 		<div id="mods" title="Mods" style="padding:10px;">
 			<div id="mods_container" style="width: 550px; height: 200px; overflow-y: scroll;">
-				<span id="_cores">
-					<h3>Cores</h3>
-				</span>
 				<span id="_mods">
 					<h3>Mods</h3>
 				</span>
 				<span id="_patches">
 					<h3>Patches</h3>
 				</span>
+				<span id="_cores">
+					<h3>Cores</h3>
+				</span>
 			</div>
 		</div>
 		<div id="config" title="Config" style="padding:10px">
-			<a href="#" id="input-config" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Configure
-				Controls</a><br />
-			<a href="#" id="verify-files" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Verify ModLoader64
-				files</a>
+			<a href="#" id="input-config" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Configure Controls</a><br />
+			<a href="#" id="flips" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Make a BPS Patch</a><br />
 		</div>
+		<!-- <div id="browser" title="Browser" style="padding:10px">
+			<div id="_browser" style="width: 550px; height: 200px; overflow-y: scroll;">
+				<table id="browserTable" class="easyui-datagrid" title="Lobby Browser" rownumbers="false" pagination="true">
+					<thead>
+						<tr>
+							<th width="20%" field="Lobby">Lobby</th>
+							<th width="20%" field="Players">Players</th>
+							<th width="20%" field="Mods">Mods</th>
+							<th width="20%" field="Patch">Patch</th>
+							<th width="20%" field="Locked">isPassword</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div> -->
+		<!-- <div id="repo" title="Get Mods" style="padding:10px">
+			<div id="_repo" style="width: 550px; height: 200px; overflow-y: scroll;">
+				<table id="repoTable" class="easyui-datagrid" title="Mod Repo" rownumbers="false" pagination="true">
+					<thead>
+						<tr>
+							<th width="80%" field="Name">Name</th>
+							<th width="20%" field="Installed" checkbox="true">Installed</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div> -->
 	</div>
+	<script>
+		(function ($) {
+			function pagerFilter(data) {
+				if ($.isArray(data)) {    // is array
+					data = {
+						total: data.length,
+						rows: data
+					}
+				}
+				var target = this;
+				var dg = $(target);
+				var state = dg.data('datagrid');
+				var opts = dg.datagrid('options');
+				if (!state.allRows) {
+					state.allRows = (data.rows);
+				}
+				if (!opts.remoteSort && opts.sortName) {
+					var names = opts.sortName.split(',');
+					var orders = opts.sortOrder.split(',');
+					state.allRows.sort(function (r1, r2) {
+						var r = 0;
+						for (var i = 0; i < names.length; i++) {
+							var sn = names[i];
+							var so = orders[i];
+							var col = $(target).datagrid('getColumnOption', sn);
+							var sortFunc = col.sorter || function (a, b) {
+								return a == b ? 0 : (a > b ? 1 : -1);
+							};
+							r = sortFunc(r1[sn], r2[sn]) * (so == 'asc' ? 1 : -1);
+							if (r != 0) {
+								return r;
+							}
+						}
+						return r;
+					});
+				}
+				var start = (opts.pageNumber - 1) * parseInt(opts.pageSize);
+				var end = start + parseInt(opts.pageSize);
+				data.rows = state.allRows.slice(start, end);
+				return data;
+			}
+
+			var loadDataMethod = $.fn.datagrid.methods.loadData;
+			var deleteRowMethod = $.fn.datagrid.methods.deleteRow;
+			$.extend($.fn.datagrid.methods, {
+				clientPaging: function (jq) {
+					return jq.each(function () {
+						var dg = $(this);
+						var state = dg.data('datagrid');
+						var opts = state.options;
+						opts.loadFilter = pagerFilter;
+						var onBeforeLoad = opts.onBeforeLoad;
+						opts.onBeforeLoad = function (param) {
+							state.allRows = null;
+							return onBeforeLoad.call(this, param);
+						}
+						var pager = dg.datagrid('getPager');
+						pager.pagination({
+							onSelectPage: function (pageNum, pageSize) {
+								opts.pageNumber = pageNum;
+								opts.pageSize = pageSize;
+								pager.pagination('refresh', {
+									pageNumber: pageNum,
+									pageSize: pageSize
+								});
+								dg.datagrid('loadData', state.allRows);
+							}
+						});
+						$(this).datagrid('loadData', state.data);
+						if (opts.url) {
+							$(this).datagrid('reload');
+						}
+					});
+				},
+				loadData: function (jq, data) {
+					jq.each(function () {
+						$(this).data('datagrid').allRows = null;
+					});
+					return loadDataMethod.call($.fn.datagrid.methods, jq, data);
+				},
+				deleteRow: function (jq, index) {
+					return jq.each(function () {
+						var row = $(this).datagrid('getRows')[index];
+						deleteRowMethod.call($.fn.datagrid.methods, $(this), index);
+						var state = $(this).data('datagrid');
+						if (state.options.loadFilter == pagerFilter) {
+							for (var i = 0; i < state.allRows.length; i++) {
+								if (state.allRows[i] == row) {
+									state.allRows.splice(i, 1);
+									break;
+								}
+							}
+							$(this).datagrid('loadData', state.allRows);
+						}
+					});
+				},
+				getAllRows: function (jq) {
+					return jq.data('datagrid').allRows;
+				}
+			})
+		})(jQuery);
+	</script>
 	<script src="./index_renderer.js"></script>
 </body>
 

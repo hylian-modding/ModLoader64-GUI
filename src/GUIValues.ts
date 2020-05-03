@@ -3,7 +3,6 @@ export interface IGUIValues {
   lobby: string;
   password: string;
   rom: string;
-  server: string;
 }
 
 export class GUIValues implements IGUIValues {
@@ -11,19 +10,19 @@ export class GUIValues implements IGUIValues {
   lobby: string;
   password: string;
   rom: string;
-  server: string;
+	isOffline: boolean;
 
   constructor(
     nickname: string,
     lobby: string,
     password: string,
-    rom: string,
-    server: string
+		rom: string,
+		isOffline: boolean
   ) {
     this.nickname = nickname;
     this.lobby = lobby;
     this.password = password;
-    this.rom = rom;
-    this.server = server;
+		this.rom = rom;
+		this.isOffline = isOffline;
   }
 }
