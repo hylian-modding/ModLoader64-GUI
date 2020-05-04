@@ -400,7 +400,7 @@ async function startModLoader() {
 	});
 	ModLoader64.on('exit', (code: number) => {
 		console.log(code);
-		if (code !== 0 && code < 100) {
+		if (code !== 0 && code < 100 && code !== null) {
 			dialog.showErrorBox("ModLoader64 has crashed!", ModLoaderErrorCodes[code]);
 		}
 		try {
