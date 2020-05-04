@@ -1,21 +1,14 @@
 body {
 	background-image: url("./background_dark.png");
 	background-size: cover;
+	background-repeat: no-repeat;
+	background-color: #424242;
 	font-family: sans-serif;
 }
 
 @font-face {
     font-family: "Nintend";
     src: url("./Nintend Bold.otf") format("opentype");
-}
-#title {
-	position: relative;
-	top: -10px;
-	font-size: 20pt;
-}
-#title2 {
-	position: relative;
-	top: -25px;
 }
 #start {
 	margin-top: 2px;
