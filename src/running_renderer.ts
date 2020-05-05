@@ -1,6 +1,9 @@
 import { MessageLayer } from './MessageLayer';
 import { TunnelMessageHandler } from './GUITunnel';
 import { ipcRenderer } from 'electron';
+import unhandled from 'electron-unhandled';
+
+unhandled();
 
 const hooks = { print: (msg: string) => {} };
 

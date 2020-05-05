@@ -5,8 +5,16 @@ import request from 'request';
 const download = require('download-file');
 import fse from 'fs-extra';
 
+let isDev: boolean = fs.existsSync("./DEV_FLAG.json");
+
+let updateURL: string = "https://nexus.inpureprojects.info/ModLoader64/update/update.json";
+
+if (isDev){
+	updateURL = "https://nexus.inpureprojects.info/ModLoader64/dev/update.json";
+}
+
 request(
-	'https://nexus.inpureprojects.info/ModLoader64/update/update.json',
+	updateURL,
 	(error, response, body) => {
 		if (!error && response.statusCode === 200) {
 			if (fs.existsSync('./ModLoader.pak')) {

@@ -1,7 +1,7 @@
 {
 	"name": "modloader64-gui",
 	"productName": "modloader64 gui",
-	"version": "1.1.22",
+	"version": "1.1.25",
 	"description": "My remarkable app",
 	"license": "GPL",
 	"repository": {
@@ -10,7 +10,7 @@
 	},
 	"author": "denoflions <denvstheworld@gmail.com> (http://hylianmodding.com)",
 	"scripts": {
-		"postinstall": "electron-builder install-app-deps",
+		"postinstall": "npx patch-package && electron-builder install-app-deps",
 		"build": "node ./resources.js && tsc && node ./fix_browser.js",
 		"start": "npm run build && electron ./app",
 		"start_debug": "electron ./app",
@@ -26,14 +26,15 @@
 		"buffer-json": "^2.0.0",
 		"discord-rpc": "^3.1.0",
 		"download-file": "^0.1.5",
-		"electron-context-menu": "^0.16.0",
-		"electron-debug": "^3.0.1",
-		"electron-store": "^5.1.0",
-		"electron-unhandled": "^3.0.2",
-		"electron-updater": "^4.2.2",
-		"electron-util": "^0.14.0",
-		"eventemitter2": "^6.0.0",
+		"electron-context-menu": "0.16.0",
+		"electron-debug": "3.0.1",
+		"electron-store": "5.1.0",
+		"electron-unhandled": "3.0.2",
+		"electron-updater": "4.2.2",
+		"electron-util": "0.14.0",
+		"eventemitter2": "6.0.0",
 		"fs-extra": "^8.1.0",
+		"lzma": "^2.3.2",
 		"mkdir-recursive": "^0.4.0",
 		"recursive-readdir": "^2.2.2",
 		"request": "^2.88.2",
@@ -44,8 +45,8 @@
 		"@types/jquery": "^3.3.32",
 		"@types/request": "^2.48.4",
 		"copy-node-modules": "^1.1.1",
-		"electron": "^8.0.1",
-		"electron-builder": "^22.3.2",
+		"electron": "8.0.1",
+		"electron-builder": "22.3.2",
 		"np": "^6.1.0",
 		"patch-package": "^6.2.0",
 		"typescript": "^3.7.5",
@@ -101,7 +102,7 @@
 		"win": {
 			"asar": false,
 			"target": {
-				"target": "NSIS",
+				"target": "zip",
 				"arch": [
 					"ia32"
 				]

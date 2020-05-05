@@ -1,4 +1,5 @@
 import DiscordRPC, { Presence } from 'discord-rpc';
+import zlib from 'zlib';
 
 const clientId = '639491567815622657';
 
@@ -54,6 +55,7 @@ export class DiscordIntegration {
 	private rpc: DiscordRPC.Client;
 	private presence: DiscordPresence;
 	private ready = false;
+	config: any;
 
 	constructor() {
 		// only needed for discord allowing spectate, join, ask to join
@@ -71,13 +73,16 @@ export class DiscordIntegration {
 		this.rpc.on('ready', () => {
 			this.rpc.setActivity(this.presence);
 			this.ready = true;
+			this.rpc.subscribe('GAME_JOIN', (something: any) => {
+				console.log(something);
+			});
 		});
 
 		this.rpc.login({ clientId }).catch(console.error);
 	}
 
 	reset() {
-		if (!this.ready){
+		if (!this.ready) {
 			return;
 		}
 		this.presence = new DiscordPresence();
@@ -91,23 +96,25 @@ export class DiscordIntegration {
 	}
 
 	setActivity(p: any) {
-		if (!this.ready){
+		if (!this.ready) {
 			return;
 		}
-		this.presence.instance = true;
 		this.presence.details = p.details;
 		this.presence.state = p.state;
 		if (p.hasOwnProperty("smallImageKey")) {
 			this.presence.smallImageKey = p.smallImageKey;
 		}
-/* 		if (p.hasOwnProperty("partyId")){
-			// ???
-		}
-		if (p.hasOwnProperty("partySize")){
-			this.presence.partySize = p.partySize;
-		}
-		if (p.hasOwnProperty("partyMax")){
-			this.presence.partyMax = p.partyMax;
+/* 		if (this.config !== undefined){
+			let i: string = "";
+			console.log(this.config);
+			i += zlib.deflateSync(Buffer.from(JSON.stringify(this.config))).toString('base64');
+			this.presence.instance = true;
+			this.presence.partySize = 1;
+			this.presence.partyMax = 10;
+			this.presence.joinSecret = i;
+			(this.presence as any)["partyId"] = this.config["lobby"];
+			this.presence.instance = true;
+			console.log(this.presence);
 		} */
 		this.rpc.setActivity(this.presence);
 	}

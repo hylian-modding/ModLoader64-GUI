@@ -5,6 +5,8 @@ import request from 'request';
 const download = require('download-file');
 let url = require('url');
 
+let isDev: boolean = fs.existsSync("./DEV_FLAG.json");
+
 // Check plugins.
 let updatedSomething = false;
 if (fs.existsSync('./ModLoader/mods')) {
@@ -59,7 +61,13 @@ if (fs.existsSync('./ModLoader/mods')) {
 							});
 						}
 						if (meta.hasOwnProperty('updateUrl')) {
-							request(meta.updateUrl, (error: any, response: any, body: any) => {
+							let updateurl = meta.updateUrl;
+							if (isDev && meta.hasOwnProperty("devUrl")){
+								updateurl = meta.devUrl;
+							}
+							console.log(updateurl);
+							console.log(meta);
+							request(updateurl, (error: any, response: any, body: any) => {
 								if (!error && response.statusCode === 200) {
 									const resp: any = JSON.parse(body);
 									let pversion: any = meta.version;
@@ -70,7 +78,11 @@ if (fs.existsSync('./ModLoader/mods')) {
 											directory: download_dir,
 											filename: parse.base,
 										};
-										download(resp.url, options, function (err: any) {
+										let download_url = resp.url;
+										if (resp.hasOwnProperty("devurl")){
+											download_url = resp.devurl;
+										}
+										download(download_url, options, function (err: any) {
 											if (err) throw err;
 											let pak: Pak = new Pak(path.join(download_dir, path.basename(url.parse(resp.url).pathname)));
 											if (pak.verify()) {

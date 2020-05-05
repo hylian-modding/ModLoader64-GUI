@@ -4,6 +4,9 @@ import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
 import { ModManager, Mod, ModStatus } from './ModManager';
 import { GUIValues } from './GUIValues';
 import { RomManager, Rom } from './RomManager';
+import unhandled from 'electron-unhandled';
+
+unhandled();
 
 class GeneralFormHandler {
 	get nickname(): string {

@@ -6,7 +6,7 @@ export class MessageLayer {
   private emitter: any;
   private retriever: any;
   private emitKey: string;
-  private backingEmitter: EventEmitter2 = new EventEmitter2();
+  backingEmitter: EventEmitter2 = new EventEmitter2();
   private child!: any;
 
   constructor(id: string, emitter: any, retriever: any) {
