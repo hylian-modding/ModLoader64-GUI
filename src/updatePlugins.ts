@@ -32,11 +32,9 @@ if (fs.existsSync('./ModLoader/mods')) {
 									!fs.existsSync(path.join('./ModLoader/cores', key + '.pak'))
 								) {
 									let repo: string = meta['modloader64_deps'][key];
-									repo =
-										repo.replace(
-											'https://github.com',
-											'https://raw.githubusercontent.com'
-										) + '/master/update.json';
+									repo = repo.replace(".git", "");
+									repo = repo.replace('https://github.com','https://raw.githubusercontent.com') + '/master/update.json';
+									console.log(repo);
 									request(repo, (error: any, response: any, body: any) => {
 										if (!error && response.statusCode === 200) {
 											let resp: any = JSON.parse(body);
@@ -44,6 +42,7 @@ if (fs.existsSync('./ModLoader/mods')) {
 												directory: download_dir,
 												filename: path.basename(url.parse(resp.url).pathname),
 											};
+											console.log(resp);
 											download(resp.url, options, function (err: any) {
 												if (err) throw err;
 												let pak: Pak = new Pak(path.join(download_dir, path.basename(url.parse(resp.url).pathname)));
@@ -62,7 +61,7 @@ if (fs.existsSync('./ModLoader/mods')) {
 						}
 						if (meta.hasOwnProperty('updateUrl')) {
 							let updateurl = meta.updateUrl;
-							if (isDev && meta.hasOwnProperty("devUrl")){
+							if (isDev && meta.hasOwnProperty("devUrl")) {
 								updateurl = meta.devUrl;
 							}
 							console.log(updateurl);
@@ -79,7 +78,7 @@ if (fs.existsSync('./ModLoader/mods')) {
 											filename: parse.base,
 										};
 										let download_url = resp.url;
-										if (resp.hasOwnProperty("devurl")){
+										if (resp.hasOwnProperty("devurl")) {
 											download_url = resp.devurl;
 										}
 										download(download_url, options, function (err: any) {
@@ -104,7 +103,7 @@ if (fs.existsSync('./ModLoader/mods')) {
 						break;
 					}
 				}
-			}else{
+			} else {
 				fs.unlinkSync(path.join('./ModLoader/mods', parse.base));
 			}
 		}
