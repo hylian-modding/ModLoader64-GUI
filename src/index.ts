@@ -292,6 +292,10 @@ const createMainWindow = async () => {
 					handlers.layer.send('onConfigLoaded', config);
 				}
 				loadingWindow.close();
+				if (!fs.existsSync('./ModLoader/src/version.js')) {
+					dialog.showErrorBox("ModLoader64 has crashed!", "Failed to install ModLoader core files.");
+					app.exit();
+				}
 				win.setTitle(
 					"ModLoader64-GUI" +
 					' ' +
