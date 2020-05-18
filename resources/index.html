@@ -31,11 +31,13 @@
 				label="Offline Mode:" labelWidth="90">
 			<br /><a href="#" id="start" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Start</a>
 		</div>
-		<div id="roms" title="Games" stype="padding:10px">
+		<div id="roms" title="Games" style="width: 550px; height: 180px; overflow-y: scroll;">
+			<a href="#" id="refreshRoms" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Refresh Games</a><br /><br />
 			<form id="_roms"></form>
 		</div>
 		<div id="mods" title="Mods" style="padding:10px;">
-			<div id="mods_container" style="width: 550px; height: 200px; overflow-y: scroll;">
+			<a href="#" id="refreshMods" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Refresh Mods</a><br />
+			<div id="mods_container" style="width: 550px; height: 180px; overflow-y: scroll;">
 				<span id="_mods">
 					<h3>Mods</h3>
 				</span>

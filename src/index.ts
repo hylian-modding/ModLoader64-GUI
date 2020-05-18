@@ -39,6 +39,7 @@ let mods: ModManager;
 let roms: RomManager;
 let discord: DiscordIntegration;
 let rom = '';
+let inputConfigChild: any;
 
 class NodeSideMessageHandlers {
 	layer: MessageLayer;
@@ -93,7 +94,10 @@ class NodeSideMessageHandlers {
 			p = p.replace('.exe', '');
 		}
 		console.log(p);
-		let child = exec(
+		if (inputConfigChild !== null && inputConfigChild !== undefined) {
+			return;
+		}
+		inputConfigChild = exec(
 			p,
 			{
 				cwd: path.resolve('./ModLoader'),
@@ -104,8 +108,9 @@ class NodeSideMessageHandlers {
 				}
 			}
 		);
-		child.on('exit', (code: number) => {
+		inputConfigChild.on('exit', (code: number) => {
 			console.log(code);
+			inputConfigChild = undefined;
 		});
 	}
 
@@ -127,10 +132,29 @@ class NodeSideMessageHandlers {
 			}
 		);
 		child.on('exit', (code: number) => {
-			console.log(code);
-			app.relaunch();
-			app.exit();
+			console.log("Trying to refresh mods tab...");
+			mods = new ModManager();
+			mods.scanMods('./ModLoader/cores', '_cores');
+			mods.scanMods('./ModLoader/mods', '_mods');
+			handlers.layer.send('readMods', mods);
 		});
+	}
+
+	@TunnelMessageHandler('refreshMods')
+	onrefreshMods(evt: any) {
+		console.log("Trying to refresh mods tab...");
+		mods = new ModManager();
+		mods.scanMods('./ModLoader/cores', '_cores');
+		mods.scanMods('./ModLoader/mods', '_mods');
+		handlers.layer.send('readMods', mods);
+	}
+
+	@TunnelMessageHandler('refreshRoms')
+	onrefreshRoms(evt: any) {
+		console.log("Trying to refresh games tab...");
+		roms = new RomManager();
+		roms.getRoms();
+		handlers.layer.send('readRoms', roms);
 	}
 
 	@TunnelMessageHandler('forwardToML')

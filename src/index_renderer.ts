@@ -186,6 +186,27 @@ class WebSideMessageHandlers {
 
 	@TunnelMessageHandler('readMods')
 	onMods(mods: ModManager) {
+		let _mods = document.getElementById("_mods");
+		if (_mods !== null) {
+			_mods.innerHTML = "";
+			let h = document.createElement('h3');
+			h.innerHTML = "Mods";
+			_mods.appendChild(h);
+		}
+		let _patches = document.getElementById("_patches");
+		if (_patches !== null) {
+			_patches.innerHTML = "";
+			let h = document.createElement('h3');
+			h.innerHTML = "Patches";
+			_patches.appendChild(h);
+		}
+		let _cores = document.getElementById("_cores");
+		if (_cores !== null) {
+			_cores.innerHTML = "";
+			let h = document.createElement('h3');
+			h.innerHTML = "Cores";
+			_cores.appendChild(h);
+		}
 		mods.mods.forEach((mod: Mod) => {
 			injectItemElement_ModsTab(mod);
 		});
@@ -193,6 +214,10 @@ class WebSideMessageHandlers {
 
 	@TunnelMessageHandler('readRoms')
 	onRoms(roms: RomManager) {
+		let _roms = document.getElementById("_roms");
+		if (_roms !== null){
+			_roms.innerHTML = "";
+		}
 		roms.roms.forEach((rom: Rom) => {
 			injectItemElement_RomsTab('_roms', rom.filename, '', '', rom.hash);
 		});
@@ -245,9 +270,23 @@ if (inputConfig !== null) {
 }
 
 let flips = document.getElementById('flips');
-if (flips !== null){
-	flips.addEventListener('click', ()=>{
+if (flips !== null) {
+	flips.addEventListener('click', () => {
 		handlers.layer.send('onFlips', {});
+	});
+}
+
+let refreshMods = document.getElementById('refreshMods');
+if (refreshMods !== null){
+	refreshMods.addEventListener('click', ()=>{
+		handlers.layer.send('refreshMods', {});
+	});
+}
+
+let refreshRoms = document.getElementById("refreshRoms");
+if (refreshRoms !== null){
+	refreshRoms.addEventListener('click', ()=>{
+		handlers.layer.send("refreshRoms", {});
 	});
 }
 
