@@ -5,8 +5,27 @@ import { ModManager, Mod } from './ModManager';
 import { GUIValues } from './GUIValues';
 import { RomManager, Rom } from './RomManager';
 import unhandled from 'electron-unhandled';
+import { ModLoader64GUIConfig } from './ModLoader64GUIConfig';
 
 unhandled();
+
+//@ts-ignore
+$.extend($.fn.textbox.methods, {
+	//@ts-ignore
+	show: function (jq) {
+		return jq.each(function () {
+			//@ts-ignore
+			$(this).next().show();
+		})
+	},
+	//@ts-ignore
+	hide: function (jq) {
+		return jq.each(function () {
+			//@ts-ignore
+			$(this).next().hide();
+		})
+	}
+})
 
 class GeneralFormHandler {
 	get nickname(): string {
@@ -78,6 +97,62 @@ class GeneralFormHandler {
 			$('#single_player').checkbox('uncheck');
 		}
 	}
+
+	get serverIP(): string {
+		let _s: HTMLInputElement = document.getElementById(
+			'otherServerIP'
+		) as HTMLInputElement;
+		return _s.value;
+	}
+
+	set serverIP(s: string) {
+		let _s: HTMLInputElement = document.getElementById(
+			'otherServerIP'
+		) as HTMLInputElement;
+		_s.value = s;
+		//@ts-ignore
+		$('#otherServerIP').textbox('setText', s);
+	}
+
+	get serverPort(): string {
+		let _s: HTMLInputElement = document.getElementById(
+			'otherServerPort'
+		) as HTMLInputElement;
+		return _s.value;
+	}
+
+	set serverPort(s: string) {
+		let _s: HTMLInputElement = document.getElementById(
+			'otherServerPort'
+		) as HTMLInputElement;
+		_s.value = s;
+		//@ts-ignore
+		$('#otherServerPort').textbox('setText', s);
+	}
+
+	get selfhost(): boolean {
+		//@ts-ignore
+		return $('#selfHost').prop('checked');
+	}
+
+	set selfhost(b: boolean) {
+		if (b) {
+			//@ts-ignore
+			$('#selfHost').switchbutton('check');
+		}
+	}
+
+	get alternateConnection(): boolean {
+		//@ts-ignore
+		return $('#otherServer').prop('checked');
+	}
+
+	set alternateConnection(b: boolean) {
+		if (b) {
+			//@ts-ignore
+			$('#otherServer').switchbutton('check');
+		}
+	}
 }
 
 const formHandler: GeneralFormHandler = new GeneralFormHandler();
@@ -101,8 +176,8 @@ class WebSideMessageHandlers {
 	@TunnelMessageHandler('onStatus')
 	onStatus(status: string) { }
 
-	private folderGeneration(mods: ModManager, m: Map<string, any>){
-		mods.mods.forEach((mod: Mod)=>{
+	private folderGeneration(mods: ModManager, m: Map<string, any>) {
+		mods.mods.forEach((mod: Mod) => {
 			let key = mod.parentfolder + "/" + mod.subfolder;
 			if (!m.has(key)) {
 				let o = {
@@ -147,7 +222,7 @@ class WebSideMessageHandlers {
 		let icons: Map<string, string> = new Map<string, string>();
 		m.set("mods", _data);
 		m.set("ModLoader/mods", _data);
-		for (let i = 0; i < mods.mods.length; i++){
+		for (let i = 0; i < mods.mods.length; i++) {
 			this.folderGeneration(mods, m);
 		}
 		mods.mods.forEach((mod: Mod) => {
@@ -264,7 +339,7 @@ class WebSideMessageHandlers {
 				this.layer.send('onModStatusChanged', clone);
 			},
 			onLoadSuccess: (node: any, data: any) => {
-				if (this.skipLoadOrder){
+				if (this.skipLoadOrder) {
 					return;
 				}
 				this.skipLoadOrder = true;
@@ -278,7 +353,7 @@ class WebSideMessageHandlers {
 				if (update !== undefined) {
 					if (JSON.stringify(base) === JSON.stringify(clone)) {
 						console.log("Loading load order data.");
-						while (this.timeouts.length > 0){
+						while (this.timeouts.length > 0) {
 							let a = this.timeouts.shift();
 							clearTimeout(a);
 						}
@@ -330,10 +405,10 @@ class WebSideMessageHandlers {
 		if (root.hasOwnProperty("state")) {
 			delete root["state"];
 		}
-		if (root.hasOwnProperty("checkState")){
+		if (root.hasOwnProperty("checkState")) {
 			delete root["checkState"];
 		}
-		if (root.hasOwnProperty("_checked")){
+		if (root.hasOwnProperty("_checked")) {
 			delete root["_checked"];
 		}
 	}
@@ -449,11 +524,29 @@ class WebSideMessageHandlers {
 		formHandler.password = config['NetworkEngine.Client'].password;
 		formHandler.selectedRom = config['ModLoader64'].rom;
 		formHandler.isOffline = config['NetworkEngine.Client'].isSinglePlayer;
+		formHandler.alternateConnection = config['NetworkEngine.Client'].forceServerOverride;
+		formHandler.selfhost = config['NetworkEngine.Client'].isSinglePlayer;
+		formHandler.serverIP = config['NetworkEngine.Client'].ip;
+		formHandler.serverPort = config['NetworkEngine.Client'].port;
 	}
 
 	@TunnelMessageHandler('onLog')
 	onLog(msg: string) {
 		console.log(msg);
+	}
+
+	@TunnelMessageHandler('readGUIConfig')
+	onGUIConfig(gui: ModLoader64GUIConfig) {
+		setTimeout(() => {
+			if (!gui.showAdvancedTab) {
+				//@ts-ignore
+				var p = $('#tabs').tabs('getTab', 4);
+				p.panel('options').tab.hide();
+				p.panel('close');
+			} else {
+
+			}
+		}, 1000);
 	}
 }
 
@@ -477,7 +570,11 @@ if (startButton !== null) {
 				formHandler.lobby,
 				formHandler.password,
 				formHandler.selectedRom,
-				formHandler.isOffline
+				formHandler.isOffline,
+				formHandler.serverIP,
+				formHandler.serverPort,
+				formHandler.selfhost,
+				formHandler.alternateConnection
 			)
 		);
 	});

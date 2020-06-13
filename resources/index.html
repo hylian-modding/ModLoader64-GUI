@@ -19,7 +19,7 @@
 		<span id="title" style="font-family: Nintend; margin-left: 2px; color: #092991">ModLoader</span><span id="title"
 			style="color: #ff3503">64</span>
 	</p>
-	<div class="easyui-tabs">
+	<div id="tabs" class="easyui-tabs">
 		<div title="General" style="padding:10px">
 			<input id="nickname" class="easyui-textbox" data-options="iconCls:'icon-man',limitToList:'true'"
 				style="width:200px" prompt="username"><br />
@@ -40,9 +40,9 @@
 			</div>
 		</div>
 		<div id="mods" title="Mods" style="padding:10px;">
-			<a href="#" id="refreshMods" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Refresh Mods</a><a
-				href="#" id="modBrowser" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Get More
-				Mods</a><br /><br />
+			<a href="#" id="refreshMods" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Refresh Mods</a>
+			<!-- <a href="#" id="modBrowser" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Get More Mods</a> -->
+			<br /><br />
 			<div id="mods_container" style="width: 550px; height: 180px; overflow-y: scroll;">
 				<ul id="_mods">
 				</ul>
@@ -52,6 +52,16 @@
 			<a href="#" id="input-config" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Configure
 				Controls</a><br />
 			<a href="#" id="flips" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Make a BPS Patch</a><br />
+		</div>
+		<div id="advanced" title="Advanced" style="padding:10px">
+			Host local server: <input id="selfHost" class="easyui-switchbutton"
+				data-options="onText:'Yes',offText:'No'" /><br />
+			Connect to unofficial server: <input id="otherServer" class="easyui-switchbutton"
+				data-options="onText:'Yes',offText:'No'" /><br /><br />
+			<input id="otherServerIP" class="easyui-textbox" data-options="iconCls:'icon-man',limitToList:'true'"
+				style="width:200px" prompt="ip"><br />
+			<input id="otherServerPort" class="easyui-textbox" data-options="iconCls:'icon-man',limitToList:'true'"
+				style="width:200px" prompt="port"><br />
 		</div>
 	</div>
 

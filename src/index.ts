@@ -60,10 +60,13 @@ class NodeSideMessageHandlers {
 		config['NetworkEngine.Client'].nickname = values.nickname;
 		config['NetworkEngine.Client'].lobby = values.lobby;
 		config['NetworkEngine.Client'].password = values.password;
-		config['ModLoader64'].isServer = false;
 		config['ModLoader64'].rom = values.rom;
-		config['NetworkEngine.Client'].isSinglePlayer = values.isOffline;
-		config['NetworkEngine.Client'].forceServerOverride = false;
+		if (values.isOffline || values.selfhost){
+			config['NetworkEngine.Client'].isSinglePlayer = true;
+		}
+		config['NetworkEngine.Client'].ip = values.serverIP;
+		config['NetworkEngine.Client'].port = values.serverPort;
+		config['NetworkEngine.Client'].forceServerOverride = values.alternateConnection;
 		rom = values.rom;
 		let found = false;
 		fs.readdirSync('./ModLoader/mods').forEach((file: string) => {
@@ -319,7 +322,8 @@ const createMainWindow = async () => {
 	if (!fs.existsSync("./ModLoader64-GUI-config.json")) {
 		fs.writeFileSync("./ModLoader64-GUI-config.json", JSON.stringify(new ModLoader64GUIConfig(), null, 2));
 	}
-	let cfg: ModLoader64GUIConfig = JSON.parse(fs.readFileSync("./ModLoader64-GUI-config.json").toString());
+	let cfg: ModLoader64GUIConfig = new ModLoader64GUIConfig().fromFile(JSON.parse(fs.readFileSync("./ModLoader64-GUI-config.json").toString()));
+	fs.writeFileSync("./ModLoader64-GUI-config.json", JSON.stringify(cfg, null, 2));
 	globalShortcut.register(cfg.keybindings.soft_reset.key, () => {
 		let evt: any = { id: "SOFT_RESET_PRESSED", data: {} };
 		if (ModLoader64 !== undefined || ModLoader64 !== null) {
@@ -341,6 +345,7 @@ const createMainWindow = async () => {
 				clearInterval(transitionTimer);
 				handlers.layer.send('readMods', mods);
 				handlers.layer.send('readRoms', roms);
+				handlers.layer.send('readGUIConfig', cfg);
 				if (
 					!fs.existsSync(path.join('./ModLoader', 'ModLoader64-config.json'))
 				) {
