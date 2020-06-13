@@ -15,6 +15,7 @@ export class GUIValues implements IGUIValues {
 	serverPort: string;
 	selfhost: boolean;
 	alternateConnection: boolean;
+	data: any;
 
   constructor(
     nickname: string,
@@ -25,7 +26,8 @@ export class GUIValues implements IGUIValues {
 		serverIP: string,
 		serverPort: string,
 		selfhost: boolean,
-		alternateConnection: boolean
+		alternateConnection: boolean,
+		data: any
   ) {
     this.nickname = nickname;
     this.lobby = lobby;
@@ -36,5 +38,6 @@ export class GUIValues implements IGUIValues {
 		this.serverPort = serverPort;
 		this.selfhost = selfhost;
 		this.alternateConnection = alternateConnection;
+		this.data = data;
   }
 }

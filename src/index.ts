@@ -61,7 +61,7 @@ class NodeSideMessageHandlers {
 		config['NetworkEngine.Client'].lobby = values.lobby;
 		config['NetworkEngine.Client'].password = values.password;
 		config['ModLoader64'].rom = values.rom;
-		if (values.isOffline || values.selfhost){
+		if (values.isOffline || values.selfhost) {
 			config['NetworkEngine.Client'].isSinglePlayer = true;
 		}
 		config['NetworkEngine.Client'].ip = values.serverIP;
@@ -69,13 +69,16 @@ class NodeSideMessageHandlers {
 		config['NetworkEngine.Client'].forceServerOverride = values.alternateConnection;
 		rom = values.rom;
 		let found = false;
-		fs.readdirSync('./ModLoader/mods').forEach((file: string) => {
-			let parse = path.parse(file);
+		let patches: Array<string> = [];
+		this.findBPS(values.data, patches);
+		for (let i = 0; i < patches.length; i++) {
+			let parse = path.parse(patches[i]);
 			if (parse.ext === '.bps') {
+				console.log(parse.base);
 				config['ModLoader64'].patch = parse.base;
 				found = true;
 			}
-		});
+		}
 		if (!found) {
 			config['ModLoader64'].patch = '';
 		}
@@ -97,9 +100,23 @@ class NodeSideMessageHandlers {
 				this.findEnabledMods(children[i], order);
 			}
 		}
-		if (root.hasOwnProperty("_checked")){
-			if (order.loadOrder.hasOwnProperty(path.parse(root.attributes.file).base)){
+		if (root.hasOwnProperty("_checked")) {
+			if (order.loadOrder.hasOwnProperty(path.parse(root.attributes.file).base)) {
 				order.loadOrder[path.parse(root.attributes.file).base] = root._checked;
+			}
+		}
+	}
+
+	private findBPS(root: any, patches: Array<string>) {
+		if (root.hasOwnProperty("children")) {
+			let children: Array<any> = root.children;
+			for (let i = 0; i < children.length; i++) {
+				this.findBPS(children[i], patches);
+			}
+		}
+		if (root.hasOwnProperty("_checked")) {
+			if (root._checked) {
+				patches.push(root.attributes.file);
 			}
 		}
 	}
@@ -185,7 +202,7 @@ class NodeSideMessageHandlers {
 	}
 
 	@TunnelMessageHandler("modBrowser")
-	async onmodBrowser(evt: any){
+	async onmodBrowser(evt: any) {
 		const win = new BrowserWindow({
 			title: app.name,
 			show: false,
@@ -214,7 +231,7 @@ class RunningWindowHandlers {
 	}
 }
 
-class ModBrowserHandlers{
+class ModBrowserHandlers {
 	layer: MessageLayer;
 
 	constructor(emitter: any, retriever: any) {
@@ -387,7 +404,7 @@ const createMainWindow = async () => {
 						let s = lines[i].split("=");
 						opts[s[0].trim()] = s[1].trim().replace(/['"]+/g, "");
 					}
-					//console.log(JSON.stringify(opts, null, 2));
+					console.log(JSON.stringify(opts, null, 2));
 				}
 				loadingWindow.close();
 				if (!fs.existsSync('./ModLoader/src/version.js')) {

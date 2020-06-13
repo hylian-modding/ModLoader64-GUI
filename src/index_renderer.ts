@@ -574,7 +574,8 @@ if (startButton !== null) {
 				formHandler.serverIP,
 				formHandler.serverPort,
 				formHandler.selfhost,
-				formHandler.alternateConnection
+				formHandler.alternateConnection,
+				clone
 			)
 		);
 	});
