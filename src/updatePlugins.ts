@@ -18,6 +18,10 @@ if (fs.existsSync('./ModLoader/mods')) {
 	}
 	fs.readdirSync('./ModLoader/mods').forEach((file: string) => {
 		let parse = path.parse(file);
+		if (parse.ext === ".disabled"){
+			fs.renameSync(path.join('./ModLoader/mods', parse.base), path.join('./ModLoader/mods', parse.name));
+			parse = path.parse(parse.name);
+		}
 		if (parse.ext === '.pak') {
 			console.log('Found .pak file: ' + parse.base + '.');
 			let modPak: Pak = new Pak(path.join('./ModLoader/mods', parse.base));

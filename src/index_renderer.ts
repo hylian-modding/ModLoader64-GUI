@@ -1,7 +1,7 @@
 import { MessageLayer } from './MessageLayer';
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, TouchBarScrubber } from 'electron';
 import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
-import { ModManager, Mod, ModStatus } from './ModManager';
+import { ModManager, Mod } from './ModManager';
 import { GUIValues } from './GUIValues';
 import { RomManager, Rom } from './RomManager';
 import unhandled from 'electron-unhandled';
@@ -82,95 +82,12 @@ class GeneralFormHandler {
 
 const formHandler: GeneralFormHandler = new GeneralFormHandler();
 
-function injectItemElement_ModsTab(mod: Mod) {
-	let parent = document.getElementById(mod.category as string);
-	if (parent !== null && parent !== undefined) {
-		let entry = document.createElement('div');
-		if (mod.category !== "_cores") {
-			let chk = document.createElement('input');
-			chk.id = mod.hash!;
-			entry.appendChild(chk);
-		}
-		let icon = document.createElement('img');
-		icon.src = 'data:image/' + mod.type + ';base64, ' + mod.icon;
-		icon.width = 32;
-		icon.height = 32;
-		entry.appendChild(icon);
-		let text = document.createElement('span');
-		text.textContent = ' ' + mod.meta.name + ' ' + mod.meta.version;
-		entry.appendChild(text);
-		parent.appendChild(entry);
-		let box;
-		box = $('#' + mod.hash!);
-		let isChecked = true;
-		if (mod.file.indexOf('.disabled') > -1) {
-			isChecked = false;
-		}
-		if (mod.category !== "_cores") {
-			//@ts-ignore
-			box.checkbox({
-				checked: isChecked,
-				onChange: (checked: boolean) => {
-					let status: ModStatus = new ModStatus(mod);
-					status.enabled = checked;
-					handlers.layer.send('onModStatusChanged', status);
-				},
-			});
-		}
-	}
-}
-
 let SELECTED_ROM = '';
-
-function injectItemElement_RomsTab(
-	parentName: string,
-	name: string,
-	_icon: string,
-	version: string,
-	elemBaseName?: string
-) {
-	let parent = document.getElementById(parentName);
-	if (parent !== null && parent !== undefined) {
-		let entry = document.createElement('div');
-		let chk = document.createElement('input');
-		if (elemBaseName !== null && elemBaseName !== undefined) {
-			chk.setAttribute('data-id', elemBaseName);
-			chk.id = elemBaseName;
-		} else {
-			chk.setAttribute('data-id', name);
-			chk.id = name;
-		}
-		chk.name = 'selectedRom';
-		entry.appendChild(chk);
-		let text = document.createElement('span');
-		if (elemBaseName !== null && elemBaseName !== undefined) {
-			text.id = elemBaseName + '_span';
-		} else {
-			text.id = name + '_span';
-		}
-		text.textContent = ' ' + name + ' ' + version;
-		entry.appendChild(text);
-		parent.appendChild(entry);
-		let jq;
-		if (elemBaseName !== null && elemBaseName !== undefined) {
-			jq = $('#' + elemBaseName);
-		} else {
-			jq = $('#' + name);
-		}
-		//@ts-ignore
-		jq.radiobutton({
-			checked: false,
-			onChange: (checked: boolean) => {
-				if (checked) {
-					SELECTED_ROM = name;
-				}
-			},
-		});
-	}
-}
 
 class WebSideMessageHandlers {
 	layer: MessageLayer;
+	skipLoadOrder: boolean = false;
+	timeouts: Array<any> = [];
 
 	constructor(emitter: any, retriever: any) {
 		this.layer = new MessageLayer('internal_event_bus', emitter, retriever);
@@ -184,43 +101,345 @@ class WebSideMessageHandlers {
 	@TunnelMessageHandler('onStatus')
 	onStatus(status: string) { }
 
+	private folderGeneration(mods: ModManager, m: Map<string, any>){
+		mods.mods.forEach((mod: Mod)=>{
+			let key = mod.parentfolder + "/" + mod.subfolder;
+			if (!m.has(key)) {
+				let o = {
+					text: mod.subfolder,
+					children: [],
+					state: 'closed',
+					attributes: {
+						subfolder: true
+					}
+				};
+				let parent: any;
+				m.forEach((value: any, key: string) => {
+					if (value.text === mod.parentfolder) {
+						parent = value;
+					}
+				});
+				if (parent !== undefined) {
+					if (parent.hasOwnProperty("children")) {
+						(parent.children as Array<any>).push(o);
+					}
+					m.set(key, o);
+				}
+			}
+		});
+	}
+
 	@TunnelMessageHandler('readMods')
 	onMods(mods: ModManager) {
 		let _mods = document.getElementById("_mods");
 		if (_mods !== null) {
 			_mods.innerHTML = "";
-			let h = document.createElement('h3');
-			h.innerHTML = "Mods";
-			_mods.appendChild(h);
 		}
-		let _patches = document.getElementById("_patches");
-		if (_patches !== null) {
-			_patches.innerHTML = "";
-			let h = document.createElement('h3');
-			h.innerHTML = "Patches";
-			_patches.appendChild(h);
-		}
-		let _cores = document.getElementById("_cores");
-		if (_cores !== null) {
-			_cores.innerHTML = "";
-			let h = document.createElement('h3');
-			h.innerHTML = "Cores";
-			_cores.appendChild(h);
+		let _data = {
+			text: 'mods',
+			state: 'open',
+			children: [],
+			attributes: {
+				root: true
+			}
+		};
+		let m: Map<string, any> = new Map<string, any>();
+		let icons: Map<string, string> = new Map<string, string>();
+		m.set("mods", _data);
+		m.set("ModLoader/mods", _data);
+		for (let i = 0; i < mods.mods.length; i++){
+			this.folderGeneration(mods, m);
 		}
 		mods.mods.forEach((mod: Mod) => {
-			injectItemElement_ModsTab(mod);
+			let key = mod.parentfolder + "/" + mod.subfolder;
+			if (m.has(key)) {
+				let o = m.get(key)!;
+				let r: any = {
+					text: mod.meta.name,
+					checked: false,
+					attributes: {
+						hash: mod.hash,
+						parent: mod.parentfolder,
+						mod: true,
+						file: mod.file
+					}
+				};
+				o.children.push(r);
+			}
+			if (mod.icon !== undefined) {
+				if (mod.type === "gif") {
+					icons.set(mod.meta.name, "data:image/gif;base64," + mod.icon);
+				} else {
+					icons.set(mod.meta.name, "data:image/png;base64," + mod.icon);
+				}
+			}
 		});
+		this.setupModTree(mods.baseguiData, _data, icons, mods.guiData);
+	}
+
+	private setupModTree(base: any, _data: any, icons: Map<string, string>, update: any = undefined) {
+		//@ts-ignore
+		$('#_mods').tree({
+			data: [
+				_data
+			],
+			dnd: true,
+			animate: true,
+			checkbox: function (node: any) {
+				if (!node.hasOwnProperty("children")) {
+					return true;
+				}
+			},
+			onCheck: (node: any, checked: boolean) => {
+				let clone = this.getRootData();
+				this.layer.send('onModStatusChanged', clone);
+			},
+			loadFilter: (data: any, parent: any) => {
+				function forNodes(data: any, callback: any) {
+					var nodes = [];
+					for (var i = 0; i < data.length; i++) {
+						nodes.push(data[i]);
+					}
+					while (nodes.length) {
+						var node = nodes.shift();
+						if (callback(node) == false) { return; }
+						if (node.children) {
+							for (var i = node.children.length - 1; i >= 0; i--) {
+								nodes.unshift(node.children[i]);
+							}
+						}
+					}
+				}
+				forNodes(data, (node: any) => {
+					this.timeouts.push(setTimeout(() => {
+						if (icons.has(node.text)) {
+							let e: HTMLElement | null = document.getElementById(node.domId);
+							if (e !== null) {
+								(e.children[2] as HTMLElement).style.background = "url('" + icons.get(node.text)! + "')";
+								(e.children[2] as HTMLElement).style.backgroundSize = "32px";
+								(e.children[2] as HTMLElement).style.width = "32px";
+								(e.children[2] as HTMLElement).style.height = "32px";
+								e.style.height = "32px";
+								if ((e.children[3] as HTMLElement).className.indexOf("checkbox") === -1) {
+									(e.children[3] as HTMLElement).className = "";
+								}
+							}
+						}
+					}, 1000));
+				});
+				return data;
+			},
+			onBeforeDrag: (node: any) => {
+				if (node.attributes.hasOwnProperty("root")) {
+					return false;
+				}
+				return true;
+			},
+			onDragOver: (target: HTMLElement, source: any) => {
+				//@ts-ignore
+				let node = $("#_mods").tree('getNode', target);
+				if (node.hasOwnProperty("children")) {
+					if (source.hasOwnProperty("children")) {
+						return true;
+					}
+					return false;
+				}
+				return true;
+			},
+			onBeforeDrop: (target: HTMLElement, source: any, point: string) => {
+				//@ts-ignore
+				let node = $("#_mods").tree('getNode', target);
+				if (point === "append") {
+					return false;
+				}
+				if (node.attributes.hasOwnProperty("parent") && source.attributes.hasOwnProperty("parent")) {
+					if (node.attributes.parent !== source.attributes.parent) {
+						return false;
+					}
+				}
+				return true;
+			},
+			onDrop: (target: HTMLElement, source: any, point: string) => {
+				let clone = this.getRootData();
+				this.layer.send('onModStatusChanged', clone);
+			},
+			onLoadSuccess: (node: any, data: any) => {
+				if (this.skipLoadOrder){
+					return;
+				}
+				this.skipLoadOrder = true;
+				let clone = this.getRootData();
+				this.layer.send("onModListLoaded", clone);
+				if (base === undefined) {
+					return;
+				}
+				this.stripUselessDataforComparison(base);
+				this.stripUselessDataforComparison(clone);
+				if (update !== undefined) {
+					if (JSON.stringify(base) === JSON.stringify(clone)) {
+						console.log("Loading load order data.");
+						while (this.timeouts.length > 0){
+							let a = this.timeouts.shift();
+							clearTimeout(a);
+						}
+						//@ts-ignore
+						$('#_mods').tree('loadData', [update]);
+					} else {
+						console.log("Mods list changed...");
+					}
+				}
+			}
+		});
+	}
+
+	getRootData() {
+		//@ts-ignore
+		let root: any = $('#_mods').tree('getRoot');
+		//@ts-ignore
+		let data: Array<any> = $('#_mods').tree('getData', root.target);
+		let clone = jQuery.extend(true, {}, data);
+		this.cleanupTreeData(clone);
+		return clone;
+	}
+
+	private cleanupTreeData(root: any) {
+		if (root.hasOwnProperty("children")) {
+			let children: Array<any> = root.children;
+			for (let i = 0; i < children.length; i++) {
+				this.cleanupTreeData(children[i]);
+			}
+		}
+		if (root.hasOwnProperty("domId")) {
+			delete root["domId"];
+		}
+		if (root.hasOwnProperty("target")) {
+			delete root["target"];
+		}
+		if (root.hasOwnProperty("id")) {
+			delete root["id"];
+		}
+	}
+
+	private stripUselessDataforComparison(root: any) {
+		if (root.hasOwnProperty("children")) {
+			let children: Array<any> = root.children;
+			for (let i = 0; i < children.length; i++) {
+				this.cleanupTreeData(children[i]);
+			}
+		}
+		if (root.hasOwnProperty("state")) {
+			delete root["state"];
+		}
+		if (root.hasOwnProperty("checkState")){
+			delete root["checkState"];
+		}
+		if (root.hasOwnProperty("_checked")){
+			delete root["_checked"];
+		}
 	}
 
 	@TunnelMessageHandler('readRoms')
 	onRoms(roms: RomManager) {
 		let _roms = document.getElementById("_roms");
-		if (_roms !== null){
+		if (_roms !== null) {
 			_roms.innerHTML = "";
 		}
+		let _data = {
+			text: 'roms',
+			state: 'open',
+			children: []
+		};
+		let m: Map<string, any> = new Map<string, any>();
+		m.set("roms", _data);
+		m.set("ModLoader/roms", _data);
+		let actualRomObjects: Map<string, any> = new Map<string, any>();
 		roms.roms.forEach((rom: Rom) => {
-			injectItemElement_RomsTab('_roms', rom.filename, '', '', rom.hash);
+			let key = rom.parentfolder + "/" + rom.subfolder;
+			if (!m.has(key)) {
+				let o = {
+					text: rom.subfolder,
+					children: [],
+					state: 'closed',
+					animate: true,
+					attributes: {
+						subfolder: true
+					}
+				};
+				let parent: any;
+				m.forEach((value: any, key: string) => {
+					if (value.text === rom.parentfolder) {
+						parent = value;
+					}
+				});
+				if (parent !== undefined) {
+					if (parent.hasOwnProperty("children")) {
+						(parent.children as Array<any>).push(o);
+					}
+				}
+				m.set(key, o);
+			}
+			if (m.has(key)) {
+				let o = m.get(key)!;
+				let r = {
+					text: rom.filename,
+					"checked": false,
+					"attributes": {
+						hash: rom.hash
+					}
+				};
+				o.children.push(r);
+				actualRomObjects.set(rom.filename, r);
+			}
 		});
+		//@ts-ignore
+		$('#_roms').tree({
+			data: [
+				_data
+			],
+			animate: true,
+			checkbox: function (node: any) {
+				if (!node.hasOwnProperty("children")) {
+					return true;
+				}
+			},
+			onCheck: (node: any, checked: boolean) => {
+				actualRomObjects.forEach((value: any, key: string) => {
+					//@ts-ignore
+					let n = $('#_roms').tree('find', { text: value.text });
+					//@ts-ignore
+					$('#_roms').tree('update', {
+						target: n.target,
+						checked: false
+					});
+				});
+				//@ts-ignore
+				let n = $('#_roms').tree('find', { text: node.text });
+				//@ts-ignore
+				$('#_roms').tree('update', {
+					target: n.target,
+					checked: true
+				});
+				SELECTED_ROM = node.text;
+			}
+		});
+		actualRomObjects.forEach((value: any, key: string) => {
+			//@ts-ignore
+			let n = $('#_roms').tree('find', { text: value.text });
+			//@ts-ignore
+			$('#_roms').tree('update', {
+				target: n.target,
+				checked: false
+			});
+		});
+		setTimeout(() => {
+			//@ts-ignore
+			let n = $('#_roms').tree('find', { text: formHandler.selectedRom });
+			//@ts-ignore
+			$('#_roms').tree('update', {
+				target: n.target,
+				checked: true
+			});
+		}, 1000);
 	}
 
 	@TunnelMessageHandler('onConfigLoaded')
@@ -249,6 +468,8 @@ document.addEventListener('DOMContentLoaded', () => {
 let startButton = document.getElementById('start');
 if (startButton !== null) {
 	startButton.addEventListener('click', () => {
+		let clone = handlers.getRootData();
+		handlers.layer.send('onModStatusChanged', clone);
 		handlers.layer.send(
 			'onStartButtonPressed',
 			new GUIValues(
@@ -277,40 +498,22 @@ if (flips !== null) {
 }
 
 let refreshMods = document.getElementById('refreshMods');
-if (refreshMods !== null){
-	refreshMods.addEventListener('click', ()=>{
+if (refreshMods !== null) {
+	refreshMods.addEventListener('click', () => {
 		handlers.layer.send('refreshMods', {});
 	});
 }
 
 let refreshRoms = document.getElementById("refreshRoms");
-if (refreshRoms !== null){
-	refreshRoms.addEventListener('click', ()=>{
+if (refreshRoms !== null) {
+	refreshRoms.addEventListener('click', () => {
 		handlers.layer.send("refreshRoms", {});
 	});
 }
 
-/*
-let arr: Array<any> = [];
-for (let i = 0; i < 20; i++){
-	arr.push(JSON.parse(JSON.stringify({ Lobby: 'test1', Players: 1, Mods: "OotOnline", Locked: "🔒", Patch: "n/a" })));
+let modBrowser = document.getElementById("modBrowser");
+if (modBrowser !== null) {
+	modBrowser.addEventListener('click', () => {
+		handlers.layer.send("modBrowser", {});
+	});
 }
-setTimeout(() => {
-	//@ts-ignore
-	$("#browserTable").datagrid({
-		data: arr
-	});
-	//@ts-ignore
-	$('#browserTable').datagrid('clientPaging');
-}, 5000); */
-
-
-/* $.getJSON('https://nexus.inpureprojects.info/ModLoader64/repo/mods.json', {_: new Date().getTime()}, function (data) {
-	Object.keys(data).forEach((key: string) => {
-		//@ts-ignore
-		$('#repoTable').datagrid('appendRow', { Name: data[key].name, Installed: true });
-	});
-	//@ts-ignore
-	$('#repoTable').datagrid('clientPaging');
-}); */
-

@@ -4,132 +4,142 @@ import { Pak } from './PakFormat';
 import crypto from 'crypto';
 
 export class Mod {
-  file: string;
-  meta?: any;
-  icon?: string;
-  type?: string;
+	file: string;
+	subfolder?: string;
+	parentfolder?: string;
+	meta?: any;
+	icon?: string;
+	type?: string;
 	category?: string;
 	hash?: string;
 
-  constructor(file: string) {
-    this.file = file;
-  }
+	constructor(file: string) {
+		this.file = file;
+	}
 }
 
-export class ModStatus extends Mod {
-  enabled = true;
-
-  constructor(mod: Mod) {
-    super(mod.file);
-    this.fromMod(mod);
-  }
-
-  fromMod(mod: Mod) {
-    this.file = mod.file;
-    this.meta = mod.meta;
-    this.icon = mod.icon;
-  }
+export class ModLoadOrder {
+	loadOrder: any = {};
 }
 
 export class ModManager {
-  mods: Mod[] = new Array<Mod>();
+	mods: Mod[] = new Array<Mod>();
+	pakNames: Array<string> = [];
+	pakFiles: Array<string> = [];
+	folderNames: Array<string> = [];
+	loPath: string = "./ModLoader/load_order.json";
+	guiDataPath: string = "./user_mod_list.json";
+	guiBaseDataPath: string = "./base_mod_list.json";
+	guiData!: any;
+	baseguiData!: any;
+	order: ModLoadOrder = new ModLoadOrder();
 
-  changeStatus(mod: ModStatus) {
-    let m: Mod | undefined = undefined;
-    for (let i = 0; i < this.mods.length; i++) {
-      if (this.mods[i].meta.name === mod.meta.name) {
-        m = this.mods[i];
-        break;
-      }
-    }
-    if (m === null || m === undefined) {
-      return;
-    }
-    if (!fs.existsSync(m.file) || m.file === '') {
-      return;
-    }
-    if (mod.enabled) {
-      if (m.file.indexOf('.disabled') > -1) {
-        fs.renameSync(m.file, m.file.replace('.disabled', ''));
-        m.file = m.file.replace('.disabled', '');
-      }
-    } else {
-      if (m.file.indexOf('.disabled') === -1) {
-        fs.renameSync(m.file, m.file + '.disabled');
-        m.file = m.file + '.disabled';
-      }
-    }
-  }
-
-  scanMods(dir: string, type: string) {
-    let paks: Pak[] = new Array<Pak>();
-    if (fs.existsSync(dir)) {
-      fs.readdirSync(dir).forEach((file: string) => {
-        let parse = path.parse(file);
-        if (parse.ext === '.pak' || parse.base.indexOf('.pak.disabled') > -1) {
-					let modPak: Pak = new Pak(path.join(dir, parse.base));
-					if (modPak.verify()){
-						paks.push(modPak);
-					}else{
-						console.log("THIS PAK (" + file + ") is corrupt!");
-					}
-        } else if (
-          parse.ext === '.bps' ||
-          parse.base.indexOf('.bps.disabled') > -1
-        ) {
-          let patch = new Mod(path.join(dir, parse.base));
-          patch.category = '_patches';
-          let icon = '';
-          if (fs.existsSync('./resources/flips.png')) {
-            icon = fs.readFileSync('./resources/flips.png').toString('base64');
-          } else {
-            console.log(path.resolve('./resources/app/flips.png'));
-            icon = fs
-              .readFileSync('./resources/app/flips.png')
-              .toString('base64');
-          }
-          patch.meta = {
-            name: file.replace('.bps', '').replace('.disabled', ''),
-            version: '',
-          };
-					patch.icon = icon;
-					patch.hash = crypto.createHash('md5').update(fs.readFileSync(patch.file)).digest('hex');
-          this.mods.push(patch);
-        }
-      });
-    }
-    paks.forEach((modPak: Pak) => {
-      let mod = new Mod(modPak.fileName);
-      for (let i = 0; i < modPak.pak.header.files.length; i++) {
-        if (modPak.pak.header.files[i].filename.indexOf('package.json') > -1) {
-          let meta: any = JSON.parse(modPak.load(i).toString());
-          mod.meta = meta;
-          break;
-        }
-      }
-      for (let i = 0; i < modPak.pak.header.files.length; i++) {
-        if (modPak.pak.header.files[i].filename.indexOf('icon.png') > -1) {
-          let icon: Buffer = modPak.load(i);
-          mod.icon = icon.toString('base64');
-          mod.type = 'png';
-          break;
-        } else if (
-          modPak.pak.header.files[i].filename.indexOf('icon.gif') > -1
-        ) {
-          let icon: Buffer = modPak.load(i);
-          mod.icon = icon.toString('base64');
-          mod.type = 'gif';
-          break;
-        }
-      }
-      mod.category = type;
-      if (mod.meta.hasOwnProperty("isBPS")){
-        if (mod.meta.isBPS){
-          mod.category = "_patches";
-        }
+	private _recursive(parent: string, child: string, order: ModLoadOrder) {
+		let paks: Pak[] = new Array<Pak>();
+		let dir = path.join(parent, child);
+		fs.readdirSync(dir).forEach((file: string) => {
+			if (fs.lstatSync(path.join(dir, file)).isDirectory()) {
+				this.folderNames.push(file);
+				console.log(file);
+				this._recursive(dir, file, order);
+			}
+			let parse = path.parse(file);
+			if (parse.ext === '.pak') {
+				let modPak: Pak = new Pak(path.join(dir, parse.base));
+				if (modPak.verify()) {
+					paks.push(modPak);
+				} else {
+					console.log("THIS PAK (" + file + ") is corrupt!");
+				}
+			} else if (
+				parse.ext === '.bps' ||
+				parse.base.indexOf('.bps.disabled') > -1
+			) {
+				let patch = new Mod(path.join(dir, parse.base));
+				patch.category = '_patches';
+				let icon = '';
+				if (fs.existsSync('./resources/flips.png')) {
+					icon = fs.readFileSync('./resources/flips.png').toString('base64');
+				} else {
+					console.log(path.resolve('./resources/app/flips.png'));
+					icon = fs
+						.readFileSync('./resources/app/flips.png')
+						.toString('base64');
+				}
+				patch.meta = {
+					name: file.replace('.bps', '').replace('.disabled', ''),
+					version: '',
+				};
+				patch.icon = icon;
+				patch.hash = crypto.createHash('md5').update(fs.readFileSync(patch.file)).digest('hex');
+				patch.parentfolder = path.parse(parent).base;
+				patch.subfolder = child;
+				this.mods.push(patch);
+			}
+		});
+		paks.forEach((modPak: Pak) => {
+			if (!order.loadOrder.hasOwnProperty(modPak.fileName)) {
+				order.loadOrder[path.parse(modPak.fileName).base] = false;
+			}
+			console.log(path.parse(modPak.fileName).base);
+			this.pakNames.push(path.parse(modPak.fileName).base);
+			let mod = new Mod(modPak.fileName);
+			this.pakFiles.push(mod.file);
+			for (let i = 0; i < modPak.pak.header.files.length; i++) {
+				if (modPak.pak.header.files[i].filename.indexOf('package.json') > -1) {
+					let meta: any = JSON.parse(modPak.load(i).toString());
+					mod.meta = meta;
+					break;
+				}
+			}
+			for (let i = 0; i < modPak.pak.header.files.length; i++) {
+				if (modPak.pak.header.files[i].filename.indexOf('icon.png') > -1) {
+					let icon: Buffer = modPak.load(i);
+					mod.icon = icon.toString('base64');
+					mod.type = 'png';
+					break;
+				} else if (
+					modPak.pak.header.files[i].filename.indexOf('icon.gif') > -1
+				) {
+					let icon: Buffer = modPak.load(i);
+					mod.icon = icon.toString('base64');
+					mod.type = 'gif';
+					break;
+				}
+			}
+			if (mod.meta.hasOwnProperty("isBPS")) {
+				if (mod.meta.isBPS) {
+					mod.category = "_patches";
+				}
 			}
 			mod.hash = crypto.createHash('md5').update(fs.readFileSync(mod.file)).digest('hex');
-      this.mods.push(mod);
-    });
-  }
+			mod.parentfolder = path.parse(parent).base;
+			mod.subfolder = child;
+			this.mods.push(mod);
+		});
+	}
+
+	scanMods(parent: string, child: string) {
+		if (fs.existsSync(this.loPath)) {
+			console.log("Loading load order from file.");
+			this.order = JSON.parse(fs.readFileSync(this.loPath).toString());
+		}
+		this._recursive(parent, child, this.order);
+		if (fs.existsSync(this.guiDataPath)){
+			this.guiData = JSON.parse(fs.readFileSync(this.guiDataPath).toString());
+		}
+		if (fs.existsSync(this.guiBaseDataPath)){
+			this.baseguiData = JSON.parse(fs.readFileSync(this.guiBaseDataPath).toString());
+		}
+		Object.keys(this.order.loadOrder).forEach((key: string) => {
+			if (this.pakNames.indexOf(key) === -1) {
+				delete this.order.loadOrder[key];
+			}
+		});
+		this.saveLoadOrder();
+	}
+
+	saveLoadOrder(){
+		fs.writeFileSync(this.loPath, JSON.stringify(this.order, null, 2));
+	}
 }

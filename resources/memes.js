@@ -49,8 +49,7 @@ var loading = [
 	"Wasting memory",
 	"Crashing because someone walked into your scene",
 	"Turning Zelda into a chest",
-	"Working on Wind Waker Online",
-	"Exploding Psi's 200 IQ brain"
+	"Working on Wind Waker Online"
 ];
 
 function randomShitpost() {

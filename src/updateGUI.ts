@@ -7,6 +7,14 @@ import { fork } from 'child_process';
 
 export class GUIUpdater {
 	doCheck() {
+		if (fs.existsSync('./app.pak')) {
+			let pak: Pak = new Pak('./app.pak');
+			if (pak.verify()) {
+				pak.extractAll('./resources');
+				fs.unlinkSync('./app.pak');
+			}
+			process.exit(1852400485);
+		}
 		if (fs.existsSync('readme.md')) {
 			return;
 		}

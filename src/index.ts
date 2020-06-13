@@ -8,12 +8,10 @@ import contextMenu from 'electron-context-menu';
 import { fork, ForkOptions, exec } from 'child_process';
 import { MessageLayer } from './MessageLayer';
 import { TunnelMessageHandler, GUITunnelPacket } from './GUITunnel';
-import { ModManager, ModStatus } from './ModManager';
+import { ModManager, ModLoadOrder } from './ModManager';
 import fs from 'fs';
 import { GUIValues } from './GUIValues';
 import { RomManager } from './RomManager';
-import request from 'request';
-import crypto from 'crypto';
 import { DiscordIntegration } from './discord/discord';
 import { ModLoaderErrorCodes } from './ModLoaderErrorCodes';
 import { ModLoader64GUIConfig } from './ModLoader64GUIConfig';
@@ -83,8 +81,29 @@ class NodeSideMessageHandlers {
 	}
 
 	@TunnelMessageHandler('onModStatusChanged')
-	onModStatusChanged(mod: ModStatus) {
-		mods.changeStatus(mod);
+	onModStatusChanged(data: any) {
+		fs.writeFileSync("./user_mod_list.json", JSON.stringify(data, null, 2));
+		this.findEnabledMods(data, mods.order);
+		mods.saveLoadOrder();
+	}
+
+	private findEnabledMods(root: any, order: ModLoadOrder) {
+		if (root.hasOwnProperty("children")) {
+			let children: Array<any> = root.children;
+			for (let i = 0; i < children.length; i++) {
+				this.findEnabledMods(children[i], order);
+			}
+		}
+		if (root.hasOwnProperty("_checked")){
+			if (order.loadOrder.hasOwnProperty(path.parse(root.attributes.file).base)){
+				order.loadOrder[path.parse(root.attributes.file).base] = root._checked;
+			}
+		}
+	}
+
+	@TunnelMessageHandler('onModListLoaded')
+	onModListLoaded(data: any) {
+		fs.writeFileSync("./base_mod_list.json", JSON.stringify(data, null, 2));
 	}
 
 	@TunnelMessageHandler('onInputConfig')
@@ -134,8 +153,7 @@ class NodeSideMessageHandlers {
 		child.on('exit', (code: number) => {
 			console.log("Trying to refresh mods tab...");
 			mods = new ModManager();
-			mods.scanMods('./ModLoader/cores', '_cores');
-			mods.scanMods('./ModLoader/mods', '_mods');
+			mods.scanMods('./ModLoader', 'mods');
 			handlers.layer.send('readMods', mods);
 		});
 	}
@@ -144,8 +162,7 @@ class NodeSideMessageHandlers {
 	onrefreshMods(evt: any) {
 		console.log("Trying to refresh mods tab...");
 		mods = new ModManager();
-		mods.scanMods('./ModLoader/cores', '_cores');
-		mods.scanMods('./ModLoader/mods', '_mods');
+		mods.scanMods('./ModLoader', 'mods');
 		handlers.layer.send('readMods', mods);
 	}
 
@@ -163,6 +180,26 @@ class NodeSideMessageHandlers {
 			JSON.stringify(new GUITunnelPacket('forwardToML', evt.id, evt))
 		);
 	}
+
+	@TunnelMessageHandler("modBrowser")
+	async onmodBrowser(evt: any){
+		const win = new BrowserWindow({
+			title: app.name,
+			show: false,
+			width: 1024,
+			height: 768,
+			webPreferences: {
+				nodeIntegration: true,
+			},
+			frame: true,
+		});
+		win.on('ready-to-show', () => {
+			win.show();
+			mod_browser_handlers = new ModBrowserHandlers(win.webContents, ipcMain);
+			mod_browser_handlers.layer.send("readMods", mods);
+		});
+		await win.loadFile(path.join(__dirname, 'mod_browser.html'));
+	}
 }
 
 class RunningWindowHandlers {
@@ -174,29 +211,43 @@ class RunningWindowHandlers {
 	}
 }
 
+class ModBrowserHandlers{
+	layer: MessageLayer;
+
+	constructor(emitter: any, retriever: any) {
+		this.layer = new MessageLayer('internal_event_bus', emitter, retriever);
+		this.layer.setupMessageProcessor(this);
+	}
+}
+
 let handlers: NodeSideMessageHandlers;
 let running_handlers: RunningWindowHandlers;
+let loading_handlers: RunningWindowHandlers;
+let mod_browser_handlers: ModBrowserHandlers;
 
 const createLoadingWindow = async () => {
 	const win = new BrowserWindow({
 		title: app.name,
 		show: false,
 		width: 400,
-		height: 200,
+		height: 220,
 		webPreferences: {
 			nodeIntegration: true,
 		},
 		frame: false,
 	});
-
+	loading_handlers = new RunningWindowHandlers(win.webContents, ipcMain);
 	win.on('ready-to-show', () => {
 		win.show();
 		console.log('TRYING TO UPDATE MODLOADER');
+		loading_handlers.layer.send("onLoadingStep", "Updating ModLoader...");
 		updateProcess = fork(__dirname + '/updateModLoader.js');
 		updateProcess.on('exit', (code: number, signal: string) => {
 			console.log('TRYING TO UPDATE PLUGINS');
+			loading_handlers.layer.send("onLoadingStep", "Updating cores...");
 			updateProcess = fork(__dirname + '/updateCores.js');
 			updateProcess.on('exit', (code: number, signal: string) => {
+				loading_handlers.layer.send("onLoadingStep", "Updating mods...");
 				updateProcess = fork(__dirname + '/updatePlugins.js');
 				updateProcess.on('exit', (code: number, signal: string) => {
 					if (!fs.existsSync('./ModLoader/ModLoader64-config.json')) {
@@ -204,6 +255,7 @@ const createLoadingWindow = async () => {
 						return;
 					}
 					console.log('TRYING TO UPDATE GUI');
+					loading_handlers.layer.send("onLoadingStep", "Updating launcher...");
 					updateProcess = fork(__dirname + '/updateGUI.js');
 					updateProcess.on('exit', (code: number, signal: string) => {
 						console.log('GUI UPDATE CODE ' + code);
@@ -283,8 +335,7 @@ const createMainWindow = async () => {
 			if (loadingWindow && updateProcess == null) {
 				discord = new DiscordIntegration();
 				mods = new ModManager();
-				mods.scanMods('./ModLoader/cores', '_cores');
-				mods.scanMods('./ModLoader/mods', '_mods');
+				mods.scanMods('./ModLoader', 'mods');
 				roms = new RomManager();
 				roms.getRoms();
 				clearInterval(transitionTimer);
@@ -314,10 +365,31 @@ const createMainWindow = async () => {
 					);
 					console.log(config);
 					handlers.layer.send('onConfigLoaded', config);
+					console.log("Loading Mupen config...");
+					let mupen: string = fs.readFileSync(path.join(".", "ModLoader", "emulator", "mupen64plus.cfg")).toString();
+					let lines = mupen.split("\n");
+					let opts: any = {};
+					for (let i = 0; i < lines.length; i++) {
+						if (lines[i].indexOf("[") > -1) {
+							continue;
+						}
+						if (lines[i].indexOf("#") > -1) {
+							continue;
+						}
+						if (lines[i].trim() === "") {
+							continue;
+						}
+						let s = lines[i].split("=");
+						opts[s[0].trim()] = s[1].trim().replace(/['"]+/g, "");
+					}
+					//console.log(JSON.stringify(opts, null, 2));
 				}
 				loadingWindow.close();
 				if (!fs.existsSync('./ModLoader/src/version.js')) {
-					dialog.showErrorBox("ModLoader64 has crashed!", "Failed to install ModLoader core files.");
+					dialog.showErrorBox("ModLoader64 has crashed!", "Failed to install ModLoader core files. Restart this program to enter repair mode.");
+					if (fs.existsSync("./update.json")) {
+						fs.unlinkSync("./update.json");
+					}
 					app.exit();
 				}
 				win.setTitle(
@@ -328,7 +400,7 @@ const createMainWindow = async () => {
 					'ModLoader64 ' +
 					require(path.resolve('./ModLoader/src/version'))
 				);
-				win.removeMenu();
+				//win.removeMenu();
 				win.show();
 			}
 		}, 1000);
@@ -359,7 +431,7 @@ const API_WINDOWS: MessageLayer[] = new Array<MessageLayer>();
 
 (async () => {
 	await app.whenReady();
-	Menu.setApplicationMenu(null);
+	//Menu.setApplicationMenu(null);
 	loadingWindow = await createLoadingWindow();
 	mainWindow = await createMainWindow();
 })();

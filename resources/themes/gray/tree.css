@@ -12,7 +12,7 @@
   padding: 0;
 }
 .tree-node {
-  height: 26px;
+  height: 32px;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -26,8 +26,8 @@
 .tree-checkbox,
 .tree-indent {
   display: inline-block;
-  width: 16px;
-  height: 18px;
+  width: 32px;
+  height: 32px;
   margin: 4px 0;
   vertical-align: middle;
   overflow: hidden;
