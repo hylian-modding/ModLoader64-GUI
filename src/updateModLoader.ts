@@ -66,6 +66,7 @@ request(
 							}
 						}else{
 							fs.unlinkSync("./update.json");
+							fs.unlinkSync("./ModLoader.pak");
 							process.exit(1);
 						}
 					}
