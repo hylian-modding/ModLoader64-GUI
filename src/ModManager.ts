@@ -119,6 +119,11 @@ export class ModManager {
 		});
 	}
 
+	reinitLoadOrder(): ModLoadOrder{
+		this.order = new ModLoadOrder();
+		return this.order;
+	}
+
 	scanMods(parent: string, child: string) {
 		if (fs.existsSync(this.loPath)) {
 			console.log("Loading load order from file.");

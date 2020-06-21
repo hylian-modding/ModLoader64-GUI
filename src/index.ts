@@ -89,7 +89,7 @@ class NodeSideMessageHandlers {
 	@TunnelMessageHandler('onModStatusChanged')
 	onModStatusChanged(data: any) {
 		fs.writeFileSync("./user_mod_list.json", JSON.stringify(data, null, 2));
-		this.findEnabledMods(data, mods.order);
+		this.findEnabledMods(data, mods.reinitLoadOrder());
 		mods.saveLoadOrder();
 	}
 
@@ -101,9 +101,7 @@ class NodeSideMessageHandlers {
 			}
 		}
 		if (root.hasOwnProperty("_checked")) {
-			if (order.loadOrder.hasOwnProperty(path.parse(root.attributes.file).base)) {
-				order.loadOrder[path.parse(root.attributes.file).base] = root._checked;
-			}
+			order.loadOrder[path.parse(root.attributes.file).base] = root._checked;
 		}
 	}
 
