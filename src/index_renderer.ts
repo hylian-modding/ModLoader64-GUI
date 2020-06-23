@@ -6,6 +6,7 @@ import { GUIValues } from './GUIValues';
 import { RomManager, Rom } from './RomManager';
 import unhandled from 'electron-unhandled';
 import { ModLoader64GUIConfig } from './ModLoader64GUIConfig';
+var deep = require('deep-equal');
 
 unhandled();
 
@@ -351,7 +352,9 @@ class WebSideMessageHandlers {
 				this.stripUselessDataforComparison(base);
 				this.stripUselessDataforComparison(clone);
 				if (update !== undefined) {
-					if (JSON.stringify(base) === JSON.stringify(clone)) {
+					console.log(base);
+					console.log(clone);
+					if (deep(base, clone)) {
 						console.log("Loading load order data.");
 						while (this.timeouts.length > 0) {
 							let a = this.timeouts.shift();

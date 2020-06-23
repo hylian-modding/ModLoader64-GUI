@@ -38,6 +38,7 @@ let roms: RomManager;
 let discord: DiscordIntegration;
 let rom = '';
 let inputConfigChild: any;
+const HIDE_BARS: boolean = true;
 
 class NodeSideMessageHandlers {
 	layer: MessageLayer;
@@ -420,7 +421,9 @@ const createMainWindow = async () => {
 					'ModLoader64 ' +
 					require(path.resolve('./ModLoader/src/version'))
 				);
-				//win.removeMenu();
+				if (HIDE_BARS){
+					win.removeMenu();
+				}
 				win.show();
 			}
 		}, 1000);
@@ -451,7 +454,9 @@ const API_WINDOWS: MessageLayer[] = new Array<MessageLayer>();
 
 (async () => {
 	await app.whenReady();
-	//Menu.setApplicationMenu(null);
+	if (HIDE_BARS){
+		Menu.setApplicationMenu(null);
+	}
 	loadingWindow = await createLoadingWindow();
 	mainWindow = await createMainWindow();
 })();

@@ -1,7 +1,7 @@
 {
 	"name": "modloader64-gui",
 	"productName": "modloader64-gui",
-	"version": "1.1.29",
+	"version": "1.1.33",
 	"description": "My remarkable app",
 	"license": "GPL",
 	"repository": {
@@ -24,6 +24,7 @@
 		"@types/fs-extra": "^8.1.0",
 		"ansi-to-html": "^0.6.14",
 		"buffer-json": "^2.0.0",
+		"deep-equal": "^2.0.3",
 		"discord-rpc": "^3.1.0",
 		"download-file": "^0.1.5",
 		"electron-context-menu": "0.16.0",
