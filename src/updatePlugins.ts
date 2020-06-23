@@ -7,6 +7,23 @@ let url = require('url');
 
 let isDev: boolean = fs.existsSync("./DEV_FLAG.json");
 
+function getAllFiles(dirPath: string, arrayOfFiles: Array<string>) {
+    let files = fs.readdirSync(dirPath);
+
+    arrayOfFiles = arrayOfFiles || [];
+
+    files.forEach((file) => {
+        if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+            arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+        }
+        else {
+            arrayOfFiles.push(path.join(dirPath, "/", file));
+        }
+    });
+
+    return arrayOfFiles;
+}
+
 // Check plugins.
 let updatedSomething = false;
 if (fs.existsSync('./ModLoader/mods')) {
@@ -16,15 +33,16 @@ if (fs.existsSync('./ModLoader/mods')) {
 	if (!fs.existsSync(download_dir)) {
 		fs.mkdirSync(download_dir);
 	}
-	fs.readdirSync('./ModLoader/mods').forEach((file: string) => {
+	getAllFiles(mods_dir, []).forEach((file: string) => {
 		let parse = path.parse(file);
 		if (parse.ext === ".disabled"){
-			fs.renameSync(path.join('./ModLoader/mods', parse.base), path.join('./ModLoader/mods', parse.name));
+			fs.renameSync(file, path.join(parse.dir, parse.name));
+			file = path.join(parse.dir, parse.name);
 			parse = path.parse(parse.name);
 		}
 		if (parse.ext === '.pak') {
 			console.log('Found .pak file: ' + parse.base + '.');
-			let modPak: Pak = new Pak(path.join('./ModLoader/mods', parse.base));
+			let modPak: Pak = new Pak(file);
 			if (modPak.verify()) {
 				for (let i = 0; i < modPak.pak.header.files.length; i++) {
 					if (modPak.pak.header.files[i].filename.indexOf('package.json') > -1) {
