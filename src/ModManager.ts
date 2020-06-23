@@ -37,6 +37,9 @@ export class ModManager {
 	private _recursive(parent: string, child: string, order: ModLoadOrder) {
 		let paks: Pak[] = new Array<Pak>();
 		let dir = path.join(parent, child);
+		if (!fs.existsSync(dir)){
+			return;
+		}
 		fs.readdirSync(dir).forEach((file: string) => {
 			if (fs.lstatSync(path.join(dir, file)).isDirectory()) {
 				this.folderNames.push(file);
