@@ -509,6 +509,9 @@ class WebSideMessageHandlers {
 		setTimeout(() => {
 			//@ts-ignore
 			let n = $('#_roms').tree('find', { text: formHandler.selectedRom });
+			if (n === null){
+				return;
+			}
 			//@ts-ignore
 			$('#_roms').tree('update', {
 				target: n.target,
