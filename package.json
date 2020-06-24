@@ -1,7 +1,7 @@
 {
 	"name": "modloader64-gui",
 	"productName": "modloader64-gui",
-	"version": "1.1.35",
+	"version": "1.1.36",
 	"description": "My remarkable app",
 	"license": "GPL",
 	"repository": {
@@ -64,6 +64,14 @@
 		"releaseDraft": false
 	},
 	"build": {
+		"nsisWeb": {
+			"oneClick": false,
+			"allowToChangeInstallationDirectory": true
+		},
+		"nsis": {
+			"oneClick": false,
+			"allowToChangeInstallationDirectory": true
+		},
 		"electronDownload": {
 			"cache": "./cache"
 		},
@@ -102,12 +110,26 @@
 		},
 		"win": {
 			"asar": false,
-			"target": {
+			"target": [
+				{
 				"target": "zip",
 				"arch": [
 					"ia32"
 				]
+			},
+			{
+				"target": "nsis-web",
+				"arch": [
+					"ia32"
+				]
+			},
+			{
+				"target": "nsis",
+				"arch": [
+					"ia32"
+				]
 			}
+		]
 		},
 		"linux": {
 			"asar": false,

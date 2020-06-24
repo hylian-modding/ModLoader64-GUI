@@ -66,7 +66,7 @@ class NodeSideMessageHandlers {
 		if (values.isOffline || values.selfhost) {
 			config['NetworkEngine.Client'].isSinglePlayer = true;
 		}
-		if (!values.isOffline && !values.selfhost){
+		if (!values.isOffline && !values.selfhost) {
 			config['NetworkEngine.Client'].isSinglePlayer = false;
 		}
 		config['NetworkEngine.Client'].ip = values.serverIP;
@@ -391,23 +391,25 @@ const createMainWindow = async () => {
 					console.log(config);
 					handlers.layer.send('onConfigLoaded', config);
 					console.log("Loading Mupen config...");
-					let mupen: string = fs.readFileSync(path.join(".", "ModLoader", "emulator", "mupen64plus.cfg")).toString();
-					let lines = mupen.split("\n");
-					let opts: any = {};
-					for (let i = 0; i < lines.length; i++) {
-						if (lines[i].indexOf("[") > -1) {
-							continue;
+					if (fs.existsSync(path.join(".", "ModLoader", "emulator", "mupen64plus.cfg"))){
+						let mupen: string = fs.readFileSync(path.join(".", "ModLoader", "emulator", "mupen64plus.cfg")).toString();
+						let lines = mupen.split("\n");
+						let opts: any = {};
+						for (let i = 0; i < lines.length; i++) {
+							if (lines[i].indexOf("[") > -1) {
+								continue;
+							}
+							if (lines[i].indexOf("#") > -1) {
+								continue;
+							}
+							if (lines[i].trim() === "") {
+								continue;
+							}
+							let s = lines[i].split("=");
+							opts[s[0].trim()] = s[1].trim().replace(/['"]+/g, "");
 						}
-						if (lines[i].indexOf("#") > -1) {
-							continue;
-						}
-						if (lines[i].trim() === "") {
-							continue;
-						}
-						let s = lines[i].split("=");
-						opts[s[0].trim()] = s[1].trim().replace(/['"]+/g, "");
+						console.log(JSON.stringify(opts, null, 2));
 					}
-					console.log(JSON.stringify(opts, null, 2));
 				}
 				loadingWindow.close();
 				if (!fs.existsSync('./ModLoader/src/version.js')) {
@@ -425,7 +427,7 @@ const createMainWindow = async () => {
 					'ModLoader64 ' +
 					require(path.resolve('./ModLoader/src/version'))
 				);
-				if (HIDE_BARS){
+				if (HIDE_BARS) {
 					win.removeMenu();
 				}
 				win.show();
@@ -458,7 +460,7 @@ const API_WINDOWS: MessageLayer[] = new Array<MessageLayer>();
 
 (async () => {
 	await app.whenReady();
-	if (HIDE_BARS){
+	if (HIDE_BARS) {
 		Menu.setApplicationMenu(null);
 	}
 	loadingWindow = await createLoadingWindow();
