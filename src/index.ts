@@ -62,8 +62,12 @@ class NodeSideMessageHandlers {
 		config['NetworkEngine.Client'].lobby = values.lobby;
 		config['NetworkEngine.Client'].password = values.password;
 		config['ModLoader64'].rom = values.rom;
+		console.log(values);
 		if (values.isOffline || values.selfhost) {
 			config['NetworkEngine.Client'].isSinglePlayer = true;
+		}
+		if (!values.isOffline && !values.selfhost){
+			config['NetworkEngine.Client'].isSinglePlayer = false;
 		}
 		config['NetworkEngine.Client'].ip = values.serverIP;
 		config['NetworkEngine.Client'].port = values.serverPort;
