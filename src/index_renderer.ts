@@ -140,6 +140,9 @@ class GeneralFormHandler {
 		if (b) {
 			//@ts-ignore
 			$('#selfHost').switchbutton('check');
+		}else{
+			//@ts-ignore
+			$('#selfHost').switchbutton('uncheck');
 		}
 	}
 
@@ -152,6 +155,9 @@ class GeneralFormHandler {
 		if (b) {
 			//@ts-ignore
 			$('#otherServer').switchbutton('check');
+		}else{
+			//@ts-ignore
+			$('#otherServer').switchbutton('uncheck');
 		}
 	}
 }
@@ -512,7 +518,7 @@ class WebSideMessageHandlers {
 		setTimeout(() => {
 			//@ts-ignore
 			let n = $('#_roms').tree('find', { text: formHandler.selectedRom });
-			if (n === null){
+			if (n === null) {
 				return;
 			}
 			//@ts-ignore
@@ -569,6 +575,7 @@ if (startButton !== null) {
 	startButton.addEventListener('click', () => {
 		let clone = handlers.getRootData();
 		handlers.layer.send('onModStatusChanged', clone);
+		let sp: boolean = false;
 		handlers.layer.send(
 			'onStartButtonPressed',
 			new GUIValues(
@@ -621,3 +628,17 @@ if (modBrowser !== null) {
 		handlers.layer.send("modBrowser", {});
 	});
 }
+
+//@ts-ignore
+$('#single_player').checkbox({
+	onChange: (checked: boolean) => {
+		formHandler.selfhost = checked;
+	}
+});
+//@ts-ignore
+$('#selfHost').switchbutton({
+	onChange: (checked: boolean) => {
+		console.log(checked);
+		formHandler.isOffline = checked;
+	}
+});
