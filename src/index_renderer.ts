@@ -140,7 +140,7 @@ class GeneralFormHandler {
 		if (b) {
 			//@ts-ignore
 			$('#selfHost').switchbutton('check');
-		}else{
+		} else {
 			//@ts-ignore
 			$('#selfHost').switchbutton('uncheck');
 		}
@@ -155,7 +155,7 @@ class GeneralFormHandler {
 		if (b) {
 			//@ts-ignore
 			$('#otherServer').switchbutton('check');
-		}else{
+		} else {
 			//@ts-ignore
 			$('#otherServer').switchbutton('uncheck');
 		}
@@ -626,6 +626,20 @@ let modBrowser = document.getElementById("modBrowser");
 if (modBrowser !== null) {
 	modBrowser.addEventListener('click', () => {
 		handlers.layer.send("modBrowser", {});
+	});
+}
+
+let modFolder = document.getElementById("openModsFolder");
+if (modFolder !== null) {
+	modFolder.addEventListener('click', () => {
+		handlers.layer.send('openModsFolder', {});
+	});
+}
+
+let openRomsFolder = document.getElementById("openRomsFolder");
+if (openRomsFolder !== null) {
+	openRomsFolder.addEventListener('click', () => {
+		handlers.layer.send('openRomsFolder', {});
 	});
 }
 

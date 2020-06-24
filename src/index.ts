@@ -1,6 +1,6 @@
 'use strict';
 import path from 'path';
-import { app, BrowserWindow, Menu, ipcMain, dialog, globalShortcut } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, dialog, globalShortcut, shell } from 'electron';
 import { is, api } from 'electron-util';
 import unhandled from 'electron-unhandled';
 import debug from 'electron-debug';
@@ -223,6 +223,16 @@ class NodeSideMessageHandlers {
 		});
 		await win.loadFile(path.join(__dirname, 'mod_browser.html'));
 	}
+
+	@TunnelMessageHandler("openModsFolder")
+	onModsFolder(evt: any) {
+		shell.openItem(path.resolve("./ModLoader/mods"));
+	}
+	@TunnelMessageHandler("openRomsFolder")
+	openRomsFolder(evt: any) {
+		shell.openItem(path.resolve("./ModLoader/roms"));
+	}
+
 }
 
 class RunningWindowHandlers {
@@ -391,7 +401,7 @@ const createMainWindow = async () => {
 					console.log(config);
 					handlers.layer.send('onConfigLoaded', config);
 					console.log("Loading Mupen config...");
-					if (fs.existsSync(path.join(".", "ModLoader", "emulator", "mupen64plus.cfg"))){
+					if (fs.existsSync(path.join(".", "ModLoader", "emulator", "mupen64plus.cfg"))) {
 						let mupen: string = fs.readFileSync(path.join(".", "ModLoader", "emulator", "mupen64plus.cfg")).toString();
 						let lines = mupen.split("\n");
 						let opts: any = {};
