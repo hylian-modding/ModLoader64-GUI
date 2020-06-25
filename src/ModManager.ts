@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Pak } from './PakFormat';
 import crypto from 'crypto';
+import zip, { IZipEntry } from 'adm-zip';
 
 export class Mod {
 	file: string;
@@ -22,6 +23,16 @@ export class ModLoadOrder {
 	loadOrder: any = {};
 }
 
+export class ModZip{
+	zipFile: zip;
+	fileName: string;
+
+	constructor(fileName: string, zipFile: zip){
+		this.zipFile = zipFile;
+		this.fileName = fileName;
+	}
+}
+
 export class ModManager {
 	mods: Mod[] = new Array<Mod>();
 	pakNames: Array<string> = [];
@@ -36,6 +47,7 @@ export class ModManager {
 
 	private _recursive(parent: string, child: string, order: ModLoadOrder) {
 		let paks: Pak[] = new Array<Pak>();
+		let zips: ModZip[] = new Array<ModZip>();
 		let dir = path.join(parent, child);
 		if (!fs.existsSync(dir)){
 			return;
@@ -55,8 +67,7 @@ export class ModManager {
 					console.log("THIS PAK (" + file + ") is corrupt!");
 				}
 			} else if (
-				parse.ext === '.bps' ||
-				parse.base.indexOf('.bps.disabled') > -1
+				parse.ext === '.bps'
 			) {
 				let patch = new Mod(path.join(dir, parse.base));
 				patch.category = '_patches';
@@ -78,6 +89,8 @@ export class ModManager {
 				patch.parentfolder = path.parse(parent).base;
 				patch.subfolder = child;
 				this.mods.push(patch);
+			}else if (parse.ext === ".zip"){
+				zips.push(new ModZip(path.join(dir, parse.base), new zip(path.join(dir, parse.base))));
 			}
 		});
 		paks.forEach((modPak: Pak) => {
@@ -110,6 +123,39 @@ export class ModManager {
 					break;
 				}
 			}
+			if (mod.meta.hasOwnProperty("isBPS")) {
+				if (mod.meta.isBPS) {
+					mod.category = "_patches";
+				}
+			}
+			mod.hash = crypto.createHash('md5').update(fs.readFileSync(mod.file)).digest('hex');
+			mod.parentfolder = path.parse(parent).base;
+			mod.subfolder = child;
+			this.mods.push(mod);
+		});
+		zips.forEach((modPak: ModZip) => {
+			if (!order.loadOrder.hasOwnProperty(modPak.fileName)) {
+				order.loadOrder[path.parse(modPak.fileName).base] = false;
+			}
+			console.log(path.parse(modPak.fileName).base);
+			this.pakNames.push(path.parse(modPak.fileName).base);
+			let mod = new Mod(modPak.fileName);
+			this.pakFiles.push(mod.file);
+			modPak.zipFile.getEntries().forEach((entry: IZipEntry) =>{
+				if (mod.meta === undefined && entry.name.indexOf("package.json") > -1){
+					mod.meta = JSON.parse(entry.getData().toString());
+				}
+			});
+			modPak.zipFile.getEntries().forEach((entry: IZipEntry) =>{
+				if (mod.icon === undefined && entry.name.indexOf("icon.png") > -1){
+					mod.icon = entry.getData().toString('base64');
+					mod.type = "png";
+				}
+				if (mod.icon === undefined && entry.name.indexOf("icon.gif") > -1){
+					mod.icon = entry.getData().toString('base64');
+					mod.type = "gif";
+				}
+			});
 			if (mod.meta.hasOwnProperty("isBPS")) {
 				if (mod.meta.isBPS) {
 					mod.category = "_patches";
