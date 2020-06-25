@@ -62,7 +62,6 @@ class NodeSideMessageHandlers {
 		config['NetworkEngine.Client'].lobby = values.lobby;
 		config['NetworkEngine.Client'].password = values.password;
 		config['ModLoader64'].rom = values.rom;
-		console.log(values);
 		if (values.isOffline || values.selfhost) {
 			config['NetworkEngine.Client'].isSinglePlayer = true;
 		}
@@ -72,6 +71,8 @@ class NodeSideMessageHandlers {
 		config['NetworkEngine.Client'].ip = values.serverIP;
 		config['NetworkEngine.Client'].port = values.serverPort;
 		config['NetworkEngine.Client'].forceServerOverride = values.alternateConnection;
+		config["ModLoader64"].isServer = false;
+		config["ModLoader64"].isClient = true;
 		rom = values.rom;
 		let found = false;
 		let patches: Array<string> = [];
