@@ -16,7 +16,7 @@ import { DiscordIntegration } from './discord/discord';
 import { ModLoaderErrorCodes } from './ModLoaderErrorCodes';
 import { ModLoader64GUIConfig } from './ModLoader64GUIConfig';
 
-require('source-map-support').install();
+//require('source-map-support').install();
 
 unhandled();
 //debug();
