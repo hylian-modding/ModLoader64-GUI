@@ -547,7 +547,9 @@ async function startModLoader() {
 	ModLoader64.on('exit', (code: number) => {
 		console.log(code);
 		if (code !== 0 && code < 100 && code !== null) {
-			if (code !== ModLoaderErrorCodes.UNKNOWN){
+			if (code === ModLoaderErrorCodes.UNKNOWN){
+				dialog.showErrorBox("ModLoader64 has crashed!", "ModLoader64 has encountered an error that came from a mod's code. An error report will be generated for you to submit to #misc-help in the Discord for assistance. This log can be found in ./lastErrorReport.txt and will be displayed on screen after this message.");
+			}else{
 				dialog.showErrorBox("ModLoader64 has crashed!", ModLoaderErrorCodes[code]);
 			}
 		}
@@ -577,6 +579,9 @@ async function startModLoader() {
 	});
 
 	ModLoader64.stderr.on('data', function (data: any) {
-		dialog.showErrorBox("ModLoader64 has crashed!", data.toString());
+		setTimeout(()=>{
+			fs.writeFileSync("./lastErrorReport.txt", data.toString());
+			dialog.showErrorBox("ModLoader64 error report", data.toString());
+		}, 100);
 	});
 }
