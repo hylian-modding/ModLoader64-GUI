@@ -79,9 +79,9 @@ class NodeSideMessageHandlers {
 		this.findBPS(values.data, patches);
 		for (let i = 0; i < patches.length; i++) {
 			let parse = path.parse(patches[i]);
-			for (let i = 0; i < mods.mods.length; i++){
+			for (let i = 0; i < mods.mods.length; i++) {
 				let m = mods.mods[i];
-				if ((path.parse(m.file).base === parse.base) && m.category === "_patches"){
+				if ((path.parse(m.file).base === parse.base) && m.category === "_patches") {
 					console.log(parse.base);
 					config['ModLoader64'].patch = parse.base;
 					found = true;
@@ -520,6 +520,7 @@ async function startModLoader() {
 	}
 	const options = {
 		stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+		silent: true,
 	};
 	console.log(path.resolve('./ModLoader/src/index.js'));
 	ModLoader64 = fork(
@@ -546,7 +547,9 @@ async function startModLoader() {
 	ModLoader64.on('exit', (code: number) => {
 		console.log(code);
 		if (code !== 0 && code < 100 && code !== null) {
-			dialog.showErrorBox("ModLoader64 has crashed!", ModLoaderErrorCodes[code]);
+			if (code !== ModLoaderErrorCodes.UNKNOWN){
+				dialog.showErrorBox("ModLoader64 has crashed!", ModLoaderErrorCodes[code]);
+			}
 		}
 		try {
 			mainWindow.setPosition(
@@ -567,5 +570,13 @@ async function startModLoader() {
 		}
 		running_handlers.layer.send('onLog', msg);
 		console.log(msg);
+	});
+
+	ModLoader64.on('error', (err: any) => {
+		console.log("\n\t\tERROR: spawn failed! (" + err + ")");
+	});
+
+	ModLoader64.stderr.on('data', function (data: any) {
+		dialog.showErrorBox("ModLoader64 has crashed!", data.toString());
 	});
 }
