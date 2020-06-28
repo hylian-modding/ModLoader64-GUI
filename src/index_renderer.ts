@@ -555,10 +555,8 @@ class WebSideMessageHandlers {
 				var p = $('#tabs').tabs('getTab', 4);
 				p.panel('options').tab.hide();
 				p.panel('close');
-			} else {
-
 			}
-		}, 1000);
+		}, 100);
 	}
 }
 
