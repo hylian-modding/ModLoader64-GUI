@@ -79,10 +79,13 @@ class NodeSideMessageHandlers {
 		this.findBPS(values.data, patches);
 		for (let i = 0; i < patches.length; i++) {
 			let parse = path.parse(patches[i]);
-			if (parse.ext === '.bps') {
-				console.log(parse.base);
-				config['ModLoader64'].patch = parse.base;
-				found = true;
+			for (let i = 0; i < mods.mods.length; i++){
+				let m = mods.mods[i];
+				if ((path.parse(m.file).base === parse.base) && m.category === "_patches"){
+					console.log(parse.base);
+					config['ModLoader64'].patch = parse.base;
+					found = true;
+				}
 			}
 		}
 		if (!found) {
