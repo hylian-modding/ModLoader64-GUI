@@ -25,7 +25,8 @@ if (fs.existsSync('./ModLoader/cores')) {
 							if (isDev && meta.hasOwnProperty("devUrl")) {
 								updateurl = meta.devUrl;
 							}
-							request(meta.updateUrl, (error: any, response: any, body: any) => {
+							console.log(updateurl);
+							request(updateurl, (error: any, response: any, body: any) => {
 								if (!error && response.statusCode === 200) {
 									const resp: any = JSON.parse(body);
 									let pversion: any = meta.version;
