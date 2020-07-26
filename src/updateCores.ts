@@ -6,6 +6,7 @@ const download = require('download-file');
 
 let download_dir: string = "./downloads";
 let cores_dir: string = "./ModLoader/cores";
+let isDev: boolean = fs.existsSync("./DEV_FLAG.json");
 
 // Check plugins.
 let updatedSomething = false;
@@ -20,6 +21,10 @@ if (fs.existsSync('./ModLoader/cores')) {
 					if (modPak.pak.header.files[i].filename.indexOf('package.json') > -1) {
 						let meta: any = JSON.parse(modPak.load(i).toString());
 						if (meta.hasOwnProperty('updateUrl')) {
+							let updateurl: string = meta.updateUrl;
+							if (isDev && meta.hasOwnProperty("devUrl")) {
+								updateurl = meta.devUrl;
+							}
 							request(meta.updateUrl, (error: any, response: any, body: any) => {
 								if (!error && response.statusCode === 200) {
 									const resp: any = JSON.parse(body);

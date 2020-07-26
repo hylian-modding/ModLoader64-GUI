@@ -39,6 +39,13 @@ let discord: DiscordIntegration;
 let rom = '';
 let inputConfigChild: any;
 const HIDE_BARS: boolean = true;
+let LAST_ERROR: string = "";
+
+if (!fs.existsSync("./ModLoader64-GUI-config.json")) {
+	fs.writeFileSync("./ModLoader64-GUI-config.json", JSON.stringify(new ModLoader64GUIConfig(), null, 2));
+}
+let cfg: ModLoader64GUIConfig = new ModLoader64GUIConfig().fromFile(JSON.parse(fs.readFileSync("./ModLoader64-GUI-config.json").toString()));
+fs.writeFileSync("./ModLoader64-GUI-config.json", JSON.stringify(cfg, null, 2));
 
 class NodeSideMessageHandlers {
 	layer: MessageLayer;
@@ -276,35 +283,44 @@ const createLoadingWindow = async () => {
 	loading_handlers = new RunningWindowHandlers(win.webContents, ipcMain);
 	win.on('ready-to-show', () => {
 		win.show();
-		console.log('TRYING TO UPDATE MODLOADER');
-		loading_handlers.layer.send("onLoadingStep", "Updating ModLoader...");
-		updateProcess = fork(__dirname + '/updateModLoader.js');
-		updateProcess.on('exit', (code: number, signal: string) => {
-			console.log('TRYING TO UPDATE PLUGINS');
-			loading_handlers.layer.send("onLoadingStep", "Updating cores...");
-			updateProcess = fork(__dirname + '/updateCores.js');
+		if (cfg.automaticUpdates || fs.existsSync("./force_update.bin")){
+			console.log('TRYING TO UPDATE MODLOADER');
+			loading_handlers.layer.send("onLoadingStep", "Updating ModLoader...");
+			updateProcess = fork(__dirname + '/updateModLoader.js');
 			updateProcess.on('exit', (code: number, signal: string) => {
-				loading_handlers.layer.send("onLoadingStep", "Updating mods...");
-				updateProcess = fork(__dirname + '/updatePlugins.js');
+				console.log('TRYING TO UPDATE PLUGINS');
+				loading_handlers.layer.send("onLoadingStep", "Updating cores...");
+				updateProcess = fork(__dirname + '/updateCores.js');
 				updateProcess.on('exit', (code: number, signal: string) => {
-					if (!fs.existsSync('./ModLoader/ModLoader64-config.json')) {
-						updateProcess = null;
-						return;
-					}
-					console.log('TRYING TO UPDATE GUI');
-					loading_handlers.layer.send("onLoadingStep", "Updating launcher...");
-					updateProcess = fork(__dirname + '/updateGUI.js');
+					loading_handlers.layer.send("onLoadingStep", "Updating mods...");
+					updateProcess = fork(__dirname + '/updatePlugins.js');
 					updateProcess.on('exit', (code: number, signal: string) => {
-						console.log('GUI UPDATE CODE ' + code);
-						if (code == 1852400485) {
-							app.relaunch();
-							app.exit();
+						if (!fs.existsSync('./ModLoader/ModLoader64-config.json')) {
+							updateProcess = null;
+							return;
 						}
-						updateProcess = null;
+						console.log('TRYING TO UPDATE GUI');
+						loading_handlers.layer.send("onLoadingStep", "Updating launcher...");
+						updateProcess = fork(__dirname + '/updateGUI.js');
+						updateProcess.on('exit', (code: number, signal: string) => {
+							console.log('GUI UPDATE CODE ' + code);
+							if (code == 1852400485) {
+								app.relaunch();
+								app.exit();
+							}
+							if (fs.existsSync("./force_update.bin")){
+								fs.unlinkSync("./force_update.bin");
+							}
+							updateProcess = null;
+						});
 					});
 				});
 			});
-		});
+		}else{
+			loading_handlers.layer.send("onLoadingStep", "Starting ModLoader64...");
+			updateProcess = null;
+			return;
+		}
 	});
 
 	win.on('closed', () => {
@@ -353,11 +369,6 @@ const createMainWindow = async () => {
 			nodeIntegration: true,
 		},
 	});
-	if (!fs.existsSync("./ModLoader64-GUI-config.json")) {
-		fs.writeFileSync("./ModLoader64-GUI-config.json", JSON.stringify(new ModLoader64GUIConfig(), null, 2));
-	}
-	let cfg: ModLoader64GUIConfig = new ModLoader64GUIConfig().fromFile(JSON.parse(fs.readFileSync("./ModLoader64-GUI-config.json").toString()));
-	fs.writeFileSync("./ModLoader64-GUI-config.json", JSON.stringify(cfg, null, 2));
 	globalShortcut.register(cfg.keybindings.soft_reset.key, () => {
 		let evt: any = { id: "SOFT_RESET_PRESSED", data: {} };
 		if (ModLoader64 !== undefined || ModLoader64 !== null) {
@@ -549,6 +560,16 @@ async function startModLoader() {
 		if (code !== 0 && code < 100 && code !== null) {
 			if (code === ModLoaderErrorCodes.UNKNOWN){
 				dialog.showErrorBox("ModLoader64 has crashed!", "ModLoader64 has encountered an error that came from a mod's code. An error report will be generated for you to submit to #misc-help in the Discord for assistance. This log can be found in ./lastErrorReport.txt and will be displayed on screen after this message.");
+				setTimeout(()=>{
+					fs.writeFileSync("./lastErrorReport.txt", LAST_ERROR);
+					dialog.showErrorBox("ModLoader64 error report", LAST_ERROR);
+					LAST_ERROR = "";
+				}, 1000);
+			}else if (code === ModLoaderErrorCodes.BAD_VERSION){
+				if (!cfg.automaticUpdates){
+					fs.writeFileSync("./force_update.bin", Buffer.alloc(0xFF, 0xFF));
+				}
+				dialog.showErrorBox("ModLoader64 has crashed!", ModLoaderErrorCodes[code]);
 			}else{
 				dialog.showErrorBox("ModLoader64 has crashed!", ModLoaderErrorCodes[code]);
 			}
@@ -579,9 +600,6 @@ async function startModLoader() {
 	});
 
 	ModLoader64.stderr.on('data', function (data: any) {
-		setTimeout(()=>{
-			fs.writeFileSync("./lastErrorReport.txt", data.toString());
-			dialog.showErrorBox("ModLoader64 error report", data.toString());
-		}, 100);
+		LAST_ERROR+=data.toString();
 	});
 }

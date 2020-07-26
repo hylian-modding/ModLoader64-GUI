@@ -17,6 +17,7 @@ export class KeyBinds{
 export class ModLoader64GUIConfig{
 	keybindings: KeyBinds;
 	showAdvancedTab: boolean = false;
+	automaticUpdates: boolean = true;
 
 	constructor(){
 		this.keybindings = new KeyBinds();

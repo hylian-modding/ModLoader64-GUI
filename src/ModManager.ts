@@ -23,11 +23,11 @@ export class ModLoadOrder {
 	loadOrder: any = {};
 }
 
-export class ModZip{
+export class ModZip {
 	zipFile: zip;
 	fileName: string;
 
-	constructor(fileName: string, zipFile: zip){
+	constructor(fileName: string, zipFile: zip) {
 		this.zipFile = zipFile;
 		this.fileName = fileName;
 	}
@@ -49,7 +49,7 @@ export class ModManager {
 		let paks: Pak[] = new Array<Pak>();
 		let zips: ModZip[] = new Array<ModZip>();
 		let dir = path.join(parent, child);
-		if (!fs.existsSync(dir)){
+		if (!fs.existsSync(dir)) {
 			return;
 		}
 		fs.readdirSync(dir).forEach((file: string) => {
@@ -89,7 +89,7 @@ export class ModManager {
 				patch.parentfolder = path.parse(parent).base;
 				patch.subfolder = child;
 				this.mods.push(patch);
-			}else if (parse.ext === ".zip"){
+			} else if (parse.ext === ".zip") {
 				zips.push(new ModZip(path.join(dir, parse.base), new zip(path.join(dir, parse.base))));
 			}
 		});
@@ -141,34 +141,36 @@ export class ModManager {
 			this.pakNames.push(path.parse(modPak.fileName).base);
 			let mod = new Mod(modPak.fileName);
 			this.pakFiles.push(mod.file);
-			modPak.zipFile.getEntries().forEach((entry: IZipEntry) =>{
-				if (mod.meta === undefined && entry.name.indexOf("package.json") > -1){
+			modPak.zipFile.getEntries().forEach((entry: IZipEntry) => {
+				if (mod.meta === undefined && entry.name.indexOf("package.json") > -1) {
 					mod.meta = JSON.parse(entry.getData().toString());
 				}
 			});
-			modPak.zipFile.getEntries().forEach((entry: IZipEntry) =>{
-				if (mod.icon === undefined && entry.name.indexOf("icon.png") > -1){
+			modPak.zipFile.getEntries().forEach((entry: IZipEntry) => {
+				if (mod.icon === undefined && entry.name.indexOf("icon.png") > -1) {
 					mod.icon = entry.getData().toString('base64');
 					mod.type = "png";
 				}
-				if (mod.icon === undefined && entry.name.indexOf("icon.gif") > -1){
+				if (mod.icon === undefined && entry.name.indexOf("icon.gif") > -1) {
 					mod.icon = entry.getData().toString('base64');
 					mod.type = "gif";
 				}
 			});
-			if (mod.meta.hasOwnProperty("isBPS")) {
-				if (mod.meta.isBPS) {
-					mod.category = "_patches";
+			if (mod.meta !== undefined) {
+				if (mod.meta.hasOwnProperty("isBPS")) {
+					if (mod.meta.isBPS) {
+						mod.category = "_patches";
+					}
 				}
+				mod.hash = crypto.createHash('md5').update(fs.readFileSync(mod.file)).digest('hex');
+				mod.parentfolder = path.parse(parent).base;
+				mod.subfolder = child;
+				this.mods.push(mod);
 			}
-			mod.hash = crypto.createHash('md5').update(fs.readFileSync(mod.file)).digest('hex');
-			mod.parentfolder = path.parse(parent).base;
-			mod.subfolder = child;
-			this.mods.push(mod);
 		});
 	}
 
-	reinitLoadOrder(): ModLoadOrder{
+	reinitLoadOrder(): ModLoadOrder {
 		this.order = new ModLoadOrder();
 		return this.order;
 	}
@@ -179,10 +181,10 @@ export class ModManager {
 			this.order = JSON.parse(fs.readFileSync(this.loPath).toString());
 		}
 		this._recursive(parent, child, this.order);
-		if (fs.existsSync(this.guiDataPath)){
+		if (fs.existsSync(this.guiDataPath)) {
 			this.guiData = JSON.parse(fs.readFileSync(this.guiDataPath).toString());
 		}
-		if (fs.existsSync(this.guiBaseDataPath)){
+		if (fs.existsSync(this.guiBaseDataPath)) {
 			this.baseguiData = JSON.parse(fs.readFileSync(this.guiBaseDataPath).toString());
 		}
 		Object.keys(this.order.loadOrder).forEach((key: string) => {
@@ -193,7 +195,7 @@ export class ModManager {
 		this.saveLoadOrder();
 	}
 
-	saveLoadOrder(){
+	saveLoadOrder() {
 		fs.writeFileSync(this.loPath, JSON.stringify(this.order, null, 2));
 	}
 }
