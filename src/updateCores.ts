@@ -37,6 +37,10 @@ if (fs.existsSync('./ModLoader/cores')) {
 											directory: download_dir,
 											filename: parse.base,
 										};
+										let download_url = resp.url;
+										if (resp.hasOwnProperty("devurl")) {
+											download_url = resp.devurl;
+										}
 										download(resp.url, options, function(err: any) {
 											if (err) throw err;
 											let pak: Pak = new Pak(path.join(download_dir, parse.base));
