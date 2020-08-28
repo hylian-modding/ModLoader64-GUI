@@ -52,70 +52,81 @@ export class DiscordPresence implements Presence {
 
 export class DiscordIntegration {
 
-	private rpc: DiscordRPC.Client;
-	private presence: DiscordPresence;
+	private rpc!: DiscordRPC.Client;
+	private presence!: DiscordPresence;
 	private ready = false;
 	config: any;
 
 	constructor() {
 		// only needed for discord allowing spectate, join, ask to join
-		DiscordRPC.register(clientId);
-		this.rpc = new DiscordRPC.Client({ transport: 'ipc' });
+		try {
+			DiscordRPC.register(clientId);
+			this.rpc = new DiscordRPC.Client({ transport: 'ipc' });
 
-		this.presence = new DiscordPresence();
-		this.presence.details = "On the launcher";
-		this.presence.state = "Looking at settings";
-		this.presence.startTimestamp = Date.now();
-		this.presence.instance = true;
-		this.presence.largeImageKey = "ml64";
-		this.presence.largeImageText = "ModLoader64";
+			this.presence = new DiscordPresence();
+			this.presence.details = "On the launcher";
+			this.presence.state = "Looking at settings";
+			this.presence.startTimestamp = Date.now();
+			this.presence.instance = true;
+			this.presence.largeImageKey = "ml64";
+			this.presence.largeImageText = "ModLoader64";
 
-		this.rpc.on('ready', () => {
-			this.rpc.setActivity(this.presence);
-			this.ready = true;
-			this.rpc.subscribe('GAME_JOIN', (something: any) => {
-				console.log(something);
+			this.rpc.on('ready', () => {
+				this.rpc.setActivity(this.presence);
+				this.ready = true;
+				this.rpc.subscribe('GAME_JOIN', (something: any) => {
+					console.log(something);
+				});
 			});
-		});
 
-		this.rpc.login({ clientId }).catch(console.error);
+			this.rpc.login({ clientId }).catch(console.error);
+		} catch (err) {
+		}
 	}
 
 	reset() {
-		if (!this.ready) {
-			return;
+		try {
+			if (!this.ready) {
+				return;
+			}
+			this.presence = new DiscordPresence();
+			this.presence.details = "On the launcher";
+			this.presence.state = "Looking at settings";
+			this.presence.startTimestamp = Date.now();
+			this.presence.instance = false;
+			this.presence.largeImageKey = "ml64";
+			this.presence.largeImageText = "ModLoader64";
+			this.rpc.setActivity(this.presence);
+		} catch (err) {
+
 		}
-		this.presence = new DiscordPresence();
-		this.presence.details = "On the launcher";
-		this.presence.state = "Looking at settings";
-		this.presence.startTimestamp = Date.now();
-		this.presence.instance = false;
-		this.presence.largeImageKey = "ml64";
-		this.presence.largeImageText = "ModLoader64";
-		this.rpc.setActivity(this.presence);
 	}
 
 	setActivity(p: any) {
-		if (!this.ready) {
-			return;
+		try {
+			if (!this.ready) {
+				return;
+			}
+			this.presence.details = p.details;
+			this.presence.state = p.state;
+			if (p.hasOwnProperty("smallImageKey")) {
+				this.presence.smallImageKey = p.smallImageKey;
+			}
+			/* 		if (this.config !== undefined){
+						let i: string = "";
+						console.log(this.config);
+						i += zlib.deflateSync(Buffer.from(JSON.stringify(this.config))).toString('base64');
+						this.presence.instance = true;
+						this.presence.partySize = 1;
+						this.presence.partyMax = 10;
+						this.presence.joinSecret = i;
+						(this.presence as any)["partyId"] = this.config["lobby"];
+						this.presence.instance = true;
+						console.log(this.presence);
+					} */
+			this.rpc.setActivity(this.presence);
+		} catch (err) {
+
 		}
-		this.presence.details = p.details;
-		this.presence.state = p.state;
-		if (p.hasOwnProperty("smallImageKey")) {
-			this.presence.smallImageKey = p.smallImageKey;
-		}
-/* 		if (this.config !== undefined){
-			let i: string = "";
-			console.log(this.config);
-			i += zlib.deflateSync(Buffer.from(JSON.stringify(this.config))).toString('base64');
-			this.presence.instance = true;
-			this.presence.partySize = 1;
-			this.presence.partyMax = 10;
-			this.presence.joinSecret = i;
-			(this.presence as any)["partyId"] = this.config["lobby"];
-			this.presence.instance = true;
-			console.log(this.presence);
-		} */
-		this.rpc.setActivity(this.presence);
 	}
 }
