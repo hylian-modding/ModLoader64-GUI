@@ -50,12 +50,17 @@ export class DiscordPresence implements Presence {
 	}
 }
 
+export interface DiscordUser{
+	username: string;
+}
+
 export class DiscordIntegration {
 
 	private rpc!: DiscordRPC.Client;
 	private presence!: DiscordPresence;
 	private ready = false;
 	config: any;
+	user!: DiscordUser;
 
 	constructor() {
 		// only needed for discord allowing spectate, join, ask to join
@@ -77,10 +82,12 @@ export class DiscordIntegration {
 				this.rpc.subscribe('GAME_JOIN', (something: any) => {
 					console.log(something);
 				});
+				this.user = {username: this.rpc.user.username + "#" + this.rpc.user.discriminator};
 			});
 
 			this.rpc.login({ clientId }).catch(console.error);
 		} catch (err) {
+			console.log(err);
 		}
 	}
 

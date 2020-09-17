@@ -1,7 +1,7 @@
 {
 	"name": "modloader64-gui",
 	"productName": "modloader64-gui",
-	"version": "1.1.42",
+	"version": "1.1.44",
 	"description": "Play N64 mods the modern way!",
 	"license": "GPL",
 	"repository": {
@@ -15,7 +15,7 @@
 		"start": "npm run build && electron ./app",
 		"start_debug": "electron ./app",
 		"pack": "npm run build && electron-builder --dir",
-		"dist": "npm run build && electron-builder --windows --linux",
+		"dist": "npm run build && electron-builder --windows && electron-builder --linux",
 		"publish": "npm run bump && npm run dist",
 		"bump": "npm version --no-git-tag-version patch"
 	},
@@ -115,18 +115,6 @@
 			"target": [
 				{
 					"target": "zip",
-					"arch": [
-						"ia32"
-					]
-				},
-				{
-					"target": "nsis-web",
-					"arch": [
-						"ia32"
-					]
-				},
-				{
-					"target": "nsis",
 					"arch": [
 						"ia32"
 					]

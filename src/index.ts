@@ -369,16 +369,6 @@ const createMainWindow = async () => {
 			nodeIntegration: true,
 		},
 	});
-	globalShortcut.register(cfg.keybindings.soft_reset.key, () => {
-		let evt: any = { id: "SOFT_RESET_PRESSED", data: {} };
-		if (ModLoader64 !== undefined || ModLoader64 !== null) {
-			if (!ModLoader64.killed) {
-				ModLoader64.send(
-					JSON.stringify(new GUITunnelPacket('forwardToML', evt.id, evt))
-				);
-			}
-		}
-	})
 	win.on('ready-to-show', () => {
 		transitionTimer = setInterval(() => {
 			if (loadingWindow && updateProcess == null) {
@@ -534,13 +524,19 @@ async function startModLoader() {
 		silent: true,
 	};
 	console.log(path.resolve('./ModLoader/src/index.js'));
+	let args = ['--dir=./ModLoader'];
+	if (discord.user !== undefined){
+		args.push("--discord="  + discord.user.username);
+	}
+	console.log(args);
 	ModLoader64 = fork(
 		'./ModLoader/src/index.js',
-		['--dir=./ModLoader'],
+		args,
 		options as ForkOptions
 	);
 	ModLoader64.on('message', (message: string) => {
 		let evt: GUITunnelPacket = JSON.parse(message);
+		console.log(evt.event);
 		if (evt.id === 'internal_event_bus') {
 			handlers.layer.send('onStatus', evt.event);
 			status = evt.event as string;
