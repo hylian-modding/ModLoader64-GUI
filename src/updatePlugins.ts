@@ -37,65 +37,114 @@ function runUpdateCheck(m: Buffer, download_dir: string, parse: path.ParsedPath,
 				repo = repo.replace(".git", "");
 				repo = repo.replace('https://github.com', 'https://raw.githubusercontent.com') + '/master/update.json';
 				console.log(repo);
-				request(repo, (error: any, response: any, body: any) => {
-					if (!error && response.statusCode === 200) {
-						let resp: any = JSON.parse(body);
-						let options = {
-							directory: download_dir,
-							filename: path.basename(url.parse(resp.url).pathname),
-						};
-						console.log(resp);
-						download(resp.url, options, function (err: any) {
+				(async () => {
+					const fetch = require('node-fetch');
+					const response = await fetch(repo);
+					const body = await response.arrayBuffer();
+					const buf = Buffer.from(body);
+					const j = JSON.parse(buf.toString());
+					let options = {
+						directory: download_dir,
+						filename: path.basename(url.parse(j.url).pathname),
+					};
+					console.log(j);
+					download(j.url, options, function (err: any) {
+						try{
 							if (err) throw err;
-							let pak: Pak = new Pak(path.join(download_dir, path.basename(url.parse(resp.url).pathname)));
+							let pak: Pak = new Pak(path.join(download_dir, path.basename(url.parse(j.url).pathname)));
 							if (pak.verify()) {
 								console.log("Pak file verified.");
-								fs.copyFileSync(path.join(download_dir, path.basename(url.parse(resp.url).pathname)), path.join(cores_dir, path.basename(url.parse(resp.url).pathname)));
-								fs.unlinkSync(path.join(download_dir, path.basename(url.parse(resp.url).pathname)));
+								fs.copyFileSync(path.join(download_dir, path.basename(url.parse(j.url).pathname)), path.join(cores_dir, path.basename(url.parse(j.url).pathname)));
+								fs.unlinkSync(path.join(download_dir, path.basename(url.parse(j.url).pathname)));
 							}
 							console.log('Finished updating ' + meta.name + '.');
 							updatedSomething = true;
-						});
-					}
-				});
+						}catch(err){
+							console.log(err);
+						}
+					});
+				})();
 			}
 		});
 	}
 	if (meta.hasOwnProperty('updateUrl')) {
-		let updateurl = meta.updateUrl;
+		let updateurl: string = meta.updateUrl;
 		if (isDev && meta.hasOwnProperty("devUrl")) {
 			updateurl = meta.devUrl;
 		}
 		console.log(updateurl);
 		console.log(meta);
-		request(updateurl, (error: any, response: any, body: any) => {
-			if (!error && response.statusCode === 200) {
-				const resp: any = JSON.parse(body);
+		(async () => {
+			if (updateurl.startsWith("gitrelease:")) {
+				console.log("Parsing Github Releases...");
+				const fetch = require('node-fetch');
+				const response = await fetch(updateurl.replace("gitrelease:", ""));
+				const body = await response.arrayBuffer();
+				const buf = Buffer.from(body);
+				const j = JSON.parse(buf.toString());
 				let pversion: any = meta.version;
-				if (pversion !== resp.version) {
-					console.log('Updating ' + meta.name + '...');
-					console.log(resp);
+				let tag = j["tag_name"].replace("v", "");
+				let url = j["assets"][0]["browser_download_url"];
+				if (pversion !== tag) {
+					console.log(url);
 					let options = {
 						directory: download_dir,
 						filename: parse.base,
 					};
-					let download_url = resp.url;
-					if (resp.hasOwnProperty("devurl")) {
-						download_url = resp.devurl;
+					download(url, options, function (err: any) {
+						try {
+							if (err) throw err;
+							let p = path.join(download_dir, path.basename(url.parse(j.url).pathname));
+							let p2 = path.parse(p);
+							if (p2.ext === ".pak") {
+								let pak: Pak = new Pak(p);
+								if (pak.verify()) {
+									console.log("Pak file verified.");
+									fs.copyFileSync(p, path.join(mods_dir, path.basename(url.parse(j.url).pathname)));
+									fs.unlinkSync(p);
+								}
+							} else if (p2.ext === ".zip") {
+								fs.copyFileSync(p, path.join(mods_dir, path.basename(url.parse(j.url).pathname)));
+								fs.unlinkSync(p);
+							}
+							console.log('Finished updating ' + meta.name + '.');
+							updatedSomething = true;
+						} catch (err) {
+							console.log(err);
+						}
+					});
+				}
+			} else {
+				const fetch = require('node-fetch');
+				const response = await fetch(updateurl);
+				const body = await response.arrayBuffer();
+				const buf = Buffer.from(body);
+				const j = JSON.parse(buf.toString());
+				let pversion: any = meta.version;
+				if (pversion !== j.version) {
+					console.log('Updating ' + meta.name + '...');
+					console.log(j);
+					let options = {
+						directory: download_dir,
+						filename: parse.base,
+					};
+					let download_url = j.url;
+					if (j.hasOwnProperty("devurl")) {
+						download_url = j.devurl;
 					}
 					download(download_url, options, function (err: any) {
 						if (err) throw err;
-						let p = path.join(download_dir, path.basename(url.parse(resp.url).pathname));
+						let p = path.join(download_dir, path.basename(url.parse(j.url).pathname));
 						let p2 = path.parse(p);
 						if (p2.ext === ".pak") {
 							let pak: Pak = new Pak(p);
 							if (pak.verify()) {
 								console.log("Pak file verified.");
-								fs.copyFileSync(p, path.join(mods_dir, path.basename(url.parse(resp.url).pathname)));
+								fs.copyFileSync(p, path.join(mods_dir, path.basename(url.parse(j.url).pathname)));
 								fs.unlinkSync(p);
 							}
 						} else if (p2.ext === ".zip") {
-							fs.copyFileSync(p, path.join(mods_dir, path.basename(url.parse(resp.url).pathname)));
+							fs.copyFileSync(p, path.join(mods_dir, path.basename(url.parse(j.url).pathname)));
 							fs.unlinkSync(p);
 						}
 						console.log('Finished updating ' + meta.name + '.');
@@ -105,7 +154,7 @@ function runUpdateCheck(m: Buffer, download_dir: string, parse: path.ParsedPath,
 					console.log('No update needed: ' + meta.name + '.');
 				}
 			}
-		});
+		})();
 	} else {
 		console.log('No update entry found.');
 	}

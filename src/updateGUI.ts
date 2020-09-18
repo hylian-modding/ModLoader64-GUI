@@ -1,9 +1,6 @@
 import { Pak } from './PakFormat';
 import fs from 'fs';
-import path from 'path';
-import request from 'request';
 const download = require('download-file');
-import { fork } from 'child_process';
 
 export class GUIUpdater {
 	doCheck() {
@@ -21,42 +18,33 @@ export class GUIUpdater {
 		let pkg: any = JSON.parse(
 			fs.readFileSync(__dirname + '/package.json').toString()
 		);
-		request(
-			'https://nexus.inpureprojects.info/ModLoader64/launcher/update/update.json',
-			(error, response, body) => {
-				if (error) {
-					fs.writeFileSync('./' + 'updateerror.log', error.toString());
-				}
-				if (response.statusCode) {
-					fs.writeFileSync(
-						'./' + 'update_response.log',
-						response.statusCode.toString()
-					);
-				}
-				if (!error && response.statusCode === 200) {
-					const fbResponse = JSON.parse(body);
-					if (fbResponse.version !== pkg.version) {
-						let options = {
-							directory: './',
-							filename: 'app.pak',
-						};
-						download(fbResponse.url, options, function (err: any) {
-							if (err) throw err;
-							if (fs.existsSync('./app.pak')) {
-								let pak: Pak = new Pak('./app.pak');
-								if (pak.verify()) {
-									pak.extractAll('./resources');
-									fs.unlinkSync('./app.pak');
-								}
-								process.exit(1852400485);
-							}
-						});
-					} else {
-						process.exit(0);
+		(async () => {
+			const fetch = require('node-fetch');
+			const response = await fetch('https://repo.modloader64.com/launcher/update/update.json');
+			const body = await response.arrayBuffer();
+			const buf = Buffer.from(body);
+			const j = JSON.parse(buf.toString());
+			if (j.version !== pkg.version) {
+				let options = {
+					directory: './',
+					filename: 'app.pak',
+				};
+				console.log("Trying to download...");
+				download(j.url, options, function (err: any) {
+					if (err) throw err;
+					if (fs.existsSync('./app.pak')) {
+						let pak: Pak = new Pak('./app.pak');
+						if (pak.verify()) {
+							pak.extractAll('./resources');
+							fs.unlinkSync('./app.pak');
+						}
+						process.exit(1852400485);
 					}
-				}
+				});
+			} else {
+				process.exit(0);
 			}
-		);
+		})();
 	}
 }
 
