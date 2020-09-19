@@ -40,6 +40,7 @@ let rom = '';
 let inputConfigChild: any;
 const HIDE_BARS: boolean = true;
 let LAST_ERROR: string = "";
+let mupenconfig: any = {};
 
 if (!fs.existsSync("./ModLoader64-GUI-config.json")) {
 	fs.writeFileSync("./ModLoader64-GUI-config.json", JSON.stringify(new ModLoader64GUIConfig(), null, 2));
@@ -424,6 +425,7 @@ const createMainWindow = async () => {
 							opts[s[0].trim()] = s[1].trim().replace(/['"]+/g, "");
 						}
 						console.log(JSON.stringify(opts, null, 2));
+						mupenconfig = opts;
 					}
 				}
 				loadingWindow.close();
@@ -527,6 +529,12 @@ async function startModLoader() {
 	let args = ['--dir=./ModLoader'];
 	if (discord.user !== undefined){
 		args.push("--discord="  + discord.user.username);
+	}
+	if (mupenconfig.hasOwnProperty("ScreenWidth")){
+		args.push("--ScreenWidth=" + mupenconfig["ScreenWidth"])
+	}
+	if (mupenconfig.hasOwnProperty("ScreenHeight")){
+		args.push("--ScreenHeight=" + mupenconfig["ScreenHeight"]);
 	}
 	console.log(args);
 	ModLoader64 = fork(
