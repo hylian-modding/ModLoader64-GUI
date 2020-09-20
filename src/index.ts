@@ -15,6 +15,7 @@ import { RomManager } from './RomManager';
 import { DiscordIntegration } from './discord/discord';
 import { ModLoaderErrorCodes } from './ModLoaderErrorCodes';
 import { ModLoader64GUIConfig } from './ModLoader64GUIConfig';
+import os from 'os';
 
 //require('source-map-support').install();
 
@@ -284,7 +285,7 @@ const createLoadingWindow = async () => {
 	loading_handlers = new RunningWindowHandlers(win.webContents, ipcMain);
 	win.on('ready-to-show', () => {
 		win.show();
-		if (cfg.automaticUpdates || fs.existsSync("./force_update.bin")){
+		if (cfg.automaticUpdates || fs.existsSync("./force_update.bin")) {
 			console.log('TRYING TO UPDATE MODLOADER');
 			loading_handlers.layer.send("onLoadingStep", "Updating ModLoader...");
 			updateProcess = fork(__dirname + '/updateModLoader.js');
@@ -309,7 +310,7 @@ const createLoadingWindow = async () => {
 								app.relaunch();
 								app.exit();
 							}
-							if (fs.existsSync("./force_update.bin")){
+							if (fs.existsSync("./force_update.bin")) {
 								fs.unlinkSync("./force_update.bin");
 							}
 							updateProcess = null;
@@ -317,7 +318,7 @@ const createLoadingWindow = async () => {
 					});
 				});
 			});
-		}else{
+		} else {
 			loading_handlers.layer.send("onLoadingStep", "Starting ModLoader64...");
 			updateProcess = null;
 			return;
@@ -448,6 +449,11 @@ const createMainWindow = async () => {
 					win.removeMenu();
 				}
 				win.show();
+				console.log(os.platform());
+				console.log(os.release());
+				if (os.platform().startsWith("win32") && os.release().startsWith("6.")) {
+					dialog.showErrorBox("Unsupported OS","Windows 7 is no longer supported by ModLoader64.");
+				}
 			}
 		}, 1000);
 	});
@@ -495,12 +501,16 @@ function apiHandler(evt: GUITunnelPacket) {
 				webPreferences: {
 					nodeIntegration: true,
 				},
+				alwaysOnTop: true
 			});
 
 			win.on('ready-to-show', () => {
 				win.removeMenu();
 				win.show();
 				win.setParentWindow(runningWindow);
+				setTimeout(() => {
+					win.setAlwaysOnTop(false);
+				}, 1000);
 			});
 
 			win.loadFile(evt.data[0].file);
@@ -527,13 +537,13 @@ async function startModLoader() {
 	};
 	console.log(path.resolve('./ModLoader/src/index.js'));
 	let args = ['--dir=./ModLoader'];
-	if (discord.user !== undefined){
-		args.push("--discord="  + discord.user.username);
+	if (discord.user !== undefined) {
+		args.push("--discord=" + discord.user.username);
 	}
-	if (mupenconfig.hasOwnProperty("ScreenWidth")){
+	if (mupenconfig.hasOwnProperty("ScreenWidth")) {
 		args.push("--ScreenWidth=" + mupenconfig["ScreenWidth"])
 	}
-	if (mupenconfig.hasOwnProperty("ScreenHeight")){
+	if (mupenconfig.hasOwnProperty("ScreenHeight")) {
 		args.push("--ScreenHeight=" + mupenconfig["ScreenHeight"]);
 	}
 	console.log(args);
@@ -562,19 +572,19 @@ async function startModLoader() {
 	ModLoader64.on('exit', (code: number) => {
 		console.log(code);
 		if (code !== 0 && code < 100 && code !== null) {
-			if (code === ModLoaderErrorCodes.UNKNOWN){
+			if (code === ModLoaderErrorCodes.UNKNOWN) {
 				dialog.showErrorBox("ModLoader64 has crashed!", "ModLoader64 has encountered an error that came from a mod's code. An error report will be generated for you to submit to #misc-help in the Discord for assistance. This log can be found in ./lastErrorReport.txt and will be displayed on screen after this message.");
-				setTimeout(()=>{
+				setTimeout(() => {
 					fs.writeFileSync("./lastErrorReport.txt", LAST_ERROR);
 					dialog.showErrorBox("ModLoader64 error report", LAST_ERROR);
 					LAST_ERROR = "";
 				}, 1000);
-			}else if (code === ModLoaderErrorCodes.BAD_VERSION){
-				if (!cfg.automaticUpdates){
+			} else if (code === ModLoaderErrorCodes.BAD_VERSION) {
+				if (!cfg.automaticUpdates) {
 					fs.writeFileSync("./force_update.bin", Buffer.alloc(0xFF, 0xFF));
 				}
 				dialog.showErrorBox("ModLoader64 has crashed!", ModLoaderErrorCodes[code]);
-			}else{
+			} else {
 				dialog.showErrorBox("ModLoader64 has crashed!", ModLoaderErrorCodes[code]);
 			}
 		}
@@ -604,6 +614,6 @@ async function startModLoader() {
 	});
 
 	ModLoader64.stderr.on('data', function (data: any) {
-		LAST_ERROR+=data.toString();
+		LAST_ERROR += data.toString();
 	});
 }
