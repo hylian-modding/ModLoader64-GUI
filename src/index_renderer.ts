@@ -592,13 +592,6 @@ if (startButton !== null) {
 	});
 }
 
-let inputConfig = document.getElementById('input-config');
-if (inputConfig !== null) {
-	inputConfig.addEventListener('click', () => {
-		handlers.layer.send('onInputConfig', {});
-	});
-}
-
 let flips = document.getElementById('flips');
 if (flips !== null) {
 	flips.addEventListener('click', () => {
