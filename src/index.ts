@@ -246,6 +246,15 @@ class NodeSideMessageHandlers {
 		shell.openItem(path.resolve("./ModLoader/roms"));
 	}
 
+	@TunnelMessageHandler('forceExit')
+	onExit(evt: any) {
+		if (ModLoader64 !== undefined && ModLoader64 !== null) {
+			if (!ModLoader64.killed) {
+				ModLoader64.kill();
+			}
+		}
+	}
+
 }
 
 class RunningWindowHandlers {
@@ -452,7 +461,7 @@ const createMainWindow = async () => {
 				console.log(os.platform());
 				console.log(os.release());
 				if (os.platform().startsWith("win32") && os.release().startsWith("6.")) {
-					dialog.showErrorBox("Unsupported OS","Windows 7 is no longer supported by ModLoader64.");
+					dialog.showErrorBox("Unsupported OS", "Windows 7 is no longer supported by ModLoader64.");
 				}
 			}
 		}, 1000);

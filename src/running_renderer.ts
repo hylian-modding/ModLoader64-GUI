@@ -5,7 +5,7 @@ import unhandled from 'electron-unhandled';
 
 unhandled();
 
-const hooks = { print: (msg: string) => {} };
+const hooks = { print: (msg: string) => {}, exit: ()=>{} };
 
 class WebSideMessageHandlers {
   layer: MessageLayer;
@@ -36,5 +36,9 @@ function print(msg: string) {
 }
 
 hooks.print = print;
+
+hooks.exit = ()=>{
+	handlers.layer.send("forceExit", {});
+};
 
 module.exports = hooks;
