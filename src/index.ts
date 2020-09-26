@@ -432,7 +432,9 @@ const createMainWindow = async () => {
 								continue;
 							}
 							let s = lines[i].split("=");
-							opts[s[0].trim()] = s[1].trim().replace(/['"]+/g, "");
+							if (s.length > 0){
+								opts[s[0].trim()] = s[1].trim().replace(/['"]+/g, "");
+							}
 						}
 						console.log(JSON.stringify(opts, null, 2));
 						mupenconfig = opts;

@@ -196,6 +196,9 @@ export class ModManager {
 	}
 
 	saveLoadOrder() {
-		fs.writeFileSync(this.loPath, JSON.stringify(this.order, null, 2));
+		try {
+			fs.writeFileSync(this.loPath, JSON.stringify(this.order, null, 2));
+		} catch (error) {
+		}
 	}
 }
