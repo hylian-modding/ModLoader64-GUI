@@ -47,7 +47,7 @@ function runUpdateCheck(m: Buffer, download_dir: string, parse: path.ParsedPath,
 						directory: download_dir,
 						filename: path.basename(url.parse(j.url).pathname),
 					};
-					console.log(j);
+					console.log(j.url);
 					download(j.url, options, function (err: any) {
 						try{
 							if (err) throw err;
@@ -182,7 +182,12 @@ if (fs.existsSync('./ModLoader/mods')) {
 			if (modPak.verify()) {
 				for (let i = 0; i < modPak.pak.header.files.length; i++) {
 					if (modPak.pak.header.files[i].filename.indexOf('package.json') > -1) {
-						runUpdateCheck(modPak.load(i), download_dir, parse, cores_dir, mods_dir);
+						try{
+							runUpdateCheck(modPak.load(i), download_dir, parse, cores_dir, mods_dir);
+						}catch(err){
+							console.log(err);
+							continue;
+						}
 						break;
 					}
 				}
@@ -195,7 +200,12 @@ if (fs.existsSync('./ModLoader/mods')) {
 			let modPak: AdmZip = new AdmZip(file);
 			modPak.getEntries().forEach((e: IZipEntry) => {
 				if (e.name.indexOf('package.json') > -1) {
-					runUpdateCheck(e.getData(), download_dir, parse, cores_dir, mods_dir);
+					try{
+						runUpdateCheck(e.getData(), download_dir, parse, cores_dir, mods_dir);
+					}catch(err){
+						console.log(err);
+						return;
+					}
 				}
 			});
 		}
