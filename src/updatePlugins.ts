@@ -129,7 +129,7 @@ function runUpdateCheck(m: Buffer, download_dir: string, parse: path.ParsedPath,
 						filename: parse.base,
 					};
 					let download_url = j.url;
-					if (j.hasOwnProperty("devurl")) {
+					if (isDev && j.hasOwnProperty("devurl")) {
 						download_url = j.devurl;
 					}
 					download(download_url, options, function (err: any) {
@@ -142,6 +142,8 @@ function runUpdateCheck(m: Buffer, download_dir: string, parse: path.ParsedPath,
 								console.log("Pak file verified.");
 								fs.copyFileSync(p, path.join(mods_dir, path.basename(url.parse(j.url).pathname)));
 								fs.unlinkSync(p);
+							}else{
+								console.log("Pak corrupt!");
 							}
 						} else if (p2.ext === ".zip") {
 							fs.copyFileSync(p, path.join(mods_dir, path.basename(url.parse(j.url).pathname)));
