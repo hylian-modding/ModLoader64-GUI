@@ -462,9 +462,6 @@ const createMainWindow = async () => {
 				win.show();
 				console.log(os.platform());
 				console.log(os.release());
-				if (os.platform().startsWith("win32") && os.release().startsWith("6.")) {
-					dialog.showErrorBox("Unsupported OS", "Windows 7 is no longer supported by ModLoader64.");
-				}
 			}
 		}, 1000);
 	});

@@ -133,7 +133,10 @@ function runUpdateCheck(m: Buffer, download_dir: string, parse: path.ParsedPath,
 						download_url = j.devurl;
 					}
 					download(download_url, options, function (err: any) {
-						if (err) throw err;
+						if (err){
+							console.log(err.stack);
+							return;
+						}
 						let p = path.join(download_dir, path.basename(url.parse(j.url).pathname));
 						let p2 = path.parse(p);
 						if (p2.ext === ".pak") {

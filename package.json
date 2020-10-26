@@ -1,7 +1,7 @@
 {
 	"name": "modloader64-gui",
 	"productName": "modloader64-gui",
-	"version": "1.1.55",
+	"version": "1.1.59",
 	"description": "Play N64 mods the modern way!",
 	"license": "GPL",
 	"repository": {
