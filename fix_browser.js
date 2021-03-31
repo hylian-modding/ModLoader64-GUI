@@ -5,7 +5,8 @@
 
 const fs = require('fs');
 
-let data = fs.readFileSync("./app/index_renderer.js").toString();
+/* let data = fs.readFileSync("./app/index_renderer.js").toString();
 let o = "const exports = {};\n";
 o+=data;
 fs.writeFileSync("./app/index_renderer.js", o);
+ */

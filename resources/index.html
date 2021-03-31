@@ -1,71 +1,47 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 
 <head>
-	<meta charset="utf-8">
-	<title>modloader64 gui</title>
-	<link rel="stylesheet" type="text/css" href="./themes/black/easyui.css">
-	<link rel="stylesheet" type="text/css" href="./themes/icon.css">
-	<script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
-	<script type="text/javascript" src="./jquery-3.3.1.min.js"></script>
-	<script>if (window.module) module = window.module;</script>
-	<script type="text/javascript" src="./jquery.easyui.min.js"></script>
-	<link rel="stylesheet" href="./index.css">
+	<meta charset="UTF-8">
+	<!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+	<meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+	<link rel="stylesheet" type="text/css" href="./index.css">
+	<title>Hello World!</title>
 </head>
 
 <body>
-	<p>
-		<img src="./ml64.png" width="44.4px" height="44.4px" />
-		<span id="title" style="font-family: Nintend; margin-left: 2px; color: #092991">ModLoader</span><span id="title"
-			style="color: #ff3503">64</span>
-	</p>
-	<div id="tabs" class="easyui-tabs">
-		<div title="General" style="padding:10px">
-			<input id="nickname" class="easyui-textbox" data-options="iconCls:'icon-man',limitToList:'true'"
-				style="width:200px" prompt="username"><br />
-			<input id="lobby" class="easyui-textbox" data-options="iconCls:'icon-filter'" style="width:200px"
-				prompt="lobby"><br />
-			<input id="password" class="easyui-passwordbox" data-options="iconCls:'icon-lock'" style="width:200px"
-				prompt="password"><br />
-			<input id="single_player" class="easyui-checkbox" name="single_player" value="single_player"
-				label="Offline Mode:" labelWidth="90">
-			<br /><a href="#" id="start" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Start</a>
+	<div id="header">
+		<img src="./modloader64-gui.png" width="55" height="55" /><img src="./mlText.png" />
+		<hr />
+	</div>
+	<div id="body">
+		<div class="container" id="left">
+			<div class="barBreak"></div>
+			<div id="general" class="barButton">General</div>
+			<div class="barBreak"></div>
+			<div id="Roms" class="barButton">Roms</div>
+			<div class="barBreak"></div>
+			<div id="mods" class="barButton">Mods</div>
+			<div class="barBreak"></div>
+			<div id="config" class="barButton">Config</div>
+			<div class="barBreak"></div>
 		</div>
-		<div id="roms" title="Games">
-			<div id="roms_container" style="width: 550px; height: 180px; overflow-y: scroll;">
-				<a href="#" id="openRomsFolder" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Open Games Folder</a>
-				<a href="#" id="refreshRoms" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Refresh
-					Games</a><br /><br />
-				<ul id="_roms">
-				</ul>
-			</div>
+		<div class="container" id="center">
+			<input type="text" id="playername" />
+			<input type="text" id="lobbyname" />
+			<input type="text" id="password" />
 		</div>
-		<div id="mods" title="Mods" style="padding:10px;">
-			<a href="#" id="openModsFolder" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Open Mods Folder</a>
-			<a href="#" id="refreshMods" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Refresh Mods</a>
-			<!-- <a href="#" id="modBrowser" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Get More Mods</a> -->
-			<br /><br />
-			<div id="mods_container" style="width: 550px; height: 180px; overflow-y: scroll;">
-				<ul id="_mods">
-				</ul>
-			</div>
-		</div>
-		<div id="config" title="Config" style="padding:10px">
-			<a href="#" id="flips" class="easyui-linkbutton" data-options="iconCls:'icon-ok'">Make a BPS Patch</a><br />
-		</div>
-		<div id="advanced" title="Advanced" style="padding:10px">
-			Host local server: <input id="selfHost" class="easyui-switchbutton"
-				data-options="onText:'Yes',offText:'No'" /><br />
-			Connect to unofficial server: <input id="otherServer" class="easyui-switchbutton"
-				data-options="onText:'Yes',offText:'No'" /><br /><br />
-			<input id="otherServerIP" class="easyui-textbox" data-options="iconCls:'icon-man',limitToList:'true'"
-				style="width:200px" prompt="ip"><br />
-			<input id="otherServerPort" class="easyui-textbox" data-options="iconCls:'icon-man',limitToList:'true'"
-				style="width:200px" prompt="port"><br />
+		<div class="container" id="right">
+			<div class="barBreak"></div>
+			<div id="consoles" class="barButton">Consoles</div>
+			<div class="barBreak"></div>
 		</div>
 	</div>
-
-	<script src="./index_renderer.js"></script>
+	<div id="footer">
+		<hr/>
+		<div id="copyright">© 2019-2021 Hylian Modding. Released under <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPLv3</a>.</div>
+	</div>
 </body>
 
 </html>
