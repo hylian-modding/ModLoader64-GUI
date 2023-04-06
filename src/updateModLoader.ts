@@ -45,6 +45,9 @@ if (isDev){
 		platformkey =
 			process.platform.trim() + process.env.PROCESSOR_ARCHITECTURE;
 	}
+	if (platformkey === "win32AMD64"){
+		platformkey = "win32x64";
+	}
 	console.log(platformkey);
 	if (version !== j.version) {
 		fs.writeFileSync('./update.json', JSON.stringify(j));
