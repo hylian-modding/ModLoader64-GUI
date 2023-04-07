@@ -229,6 +229,7 @@ class NodeSideMessageHandlers {
 			},
 			frame: true,
 		});
+		win.webContents.openDevTools();
 		win.on('ready-to-show', () => {
 			win.show();
 			mod_browser_handlers = new ModBrowserHandlers(win.webContents, ipcMain);
@@ -380,6 +381,8 @@ const createMainWindow = async () => {
 			nodeIntegration: true,
 		},
 	});
+	console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	win.webContents.openDevTools({ mode: 'detach'});
 	win.on('ready-to-show', () => {
 		transitionTimer = setInterval(() => {
 			if (loadingWindow && updateProcess == null) {

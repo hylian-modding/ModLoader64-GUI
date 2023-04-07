@@ -606,6 +606,27 @@ if (refreshMods !== null) {
 	});
 }
 
+let enableMods = document.getElementById('enableAllMods');
+if (enableMods !== null) {
+	enableMods.addEventListener('click', () => {
+		let list = $('.tree-checkbox0');
+		for (let i = 0; i < list.length; i++) {
+			list[i].click();
+		}
+	});
+}
+
+let disableMods = document.getElementById('disableAllMods');
+if (disableMods !== null) {
+	disableMods.addEventListener('click', () => {
+		let list = $('.tree-checkbox1');
+		for (let i = 0; i < list.length; i++) {
+			list[i].click();
+		}
+	});
+}
+
+
 let refreshRoms = document.getElementById("refreshRoms");
 if (refreshRoms !== null) {
 	refreshRoms.addEventListener('click', () => {
