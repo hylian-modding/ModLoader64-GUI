@@ -229,7 +229,6 @@ class NodeSideMessageHandlers {
 			},
 			frame: true,
 		});
-		win.webContents.openDevTools();
 		win.on('ready-to-show', () => {
 			win.show();
 			mod_browser_handlers = new ModBrowserHandlers(win.webContents, ipcMain);
