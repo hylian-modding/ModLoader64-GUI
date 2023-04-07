@@ -381,8 +381,9 @@ const createMainWindow = async () => {
 			nodeIntegration: true,
 		},
 	});
-	console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-	win.webContents.openDevTools({ mode: 'detach'});
+	if(false){ // change to true if developing
+		win.webContents.openDevTools({ mode: 'detach'});
+	}
 	win.on('ready-to-show', () => {
 		transitionTimer = setInterval(() => {
 			if (loadingWindow && updateProcess == null) {
